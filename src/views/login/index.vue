@@ -6,7 +6,7 @@
         <h3 class="title">
           {{ $t('login.title') }}
         </h3>
-        <lang-select class="set-language" />
+        <!-- <lang-select class="set-language" /> -->
       </div>
 
       <el-form-item prop="username">
@@ -221,7 +221,7 @@ $light_gray:#eee;
     padding: 10px 35px;
     margin: 160px auto 0;
     overflow: hidden;
-    background-color:rgba(0,0,0,.3) ;
+    background-color:rgba(0,0,0,.7) ;
     border-radius: 4px;
   }
 
