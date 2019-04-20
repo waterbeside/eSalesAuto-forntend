@@ -235,7 +235,7 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-@import "~@/assets/style/mixin.scss";
+@import "~@/assets/style/_mixin.scss";
 .createPost-container {
   position: relative;
   .createPost-main-container {
