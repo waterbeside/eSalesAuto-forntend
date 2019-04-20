@@ -10,31 +10,28 @@ import six from '@/views/six'
 
 export default [
    {
-    path: '/merchandising',
+    path: '/development',
     component: Layout,
-    redirect: '/merchandising/one',
-    name: 'merchandising',
+    redirect: '/development/auto_sppo',
+    name: 'development',
     meta: {
-      title: 'Merchandising',
+      title: 'Development',
       icon: 'documentation'
     },
-    
     children: [
       {
-        path: 'DynamicTable',
-        component: () => import('@/views/one'),
-        name: 'DynamicTable',
-        meta: { title: 'dynamicTable' }
-    }, {
-      path: 'one',
-      component: one,
-      name: 'one1',
-      meta: {
-        title: '菜单2',
-        //icon: 'edit'
-      },
-    }]
-  },
+        path: 'auto_sppo',
+        component: () => import('@/views/AutoSPPO'),
+        name: 'AutoSppo',
+        meta: { title: 'Auto SPPO' }
+    }, 
+    {
+      path: 'auto_sppo',
+      component: () => import('@/views/AutoSPPO'),
+      name: 'AutoSppo',
+      meta: { title: 'Auto SPPO' }
+    }, 
+    ]},
   {
     path: '/example',
     component: Layout,
@@ -68,14 +65,14 @@ export default [
   },
 
  {
-  path: 'customer_data',
+  path: '/customer_data',
     component: Layout,
     meta: {
       title: 'Customer Data',
       icon: 'location'
     },
     children: [{
-        path: 'one',
+        path: 'pech_pack',
         component: one,
         name: 'pech_pack',
         meta: {
@@ -84,7 +81,7 @@ export default [
         },
         item: 0,
       },{
-        path: 'one',
+        path: 'dev_bom',
         component: one,
         name: 'dev_bom',
         meta: {
@@ -100,7 +97,7 @@ export default [
         //icon: 'edit'
       },
     }, {
-      path: 'five',
+      path: 'bulk_bom',
       component: five,
       name: 'bulk_bom',
       meta: {
@@ -108,7 +105,7 @@ export default [
         //icon: 'edit'
       },
     }, {
-      path: 'five',
+      path: 'contract',
       component: five,
       name: 'contract',
       meta: {
@@ -118,42 +115,16 @@ export default [
     }]
   },
 
+ 
   {
-    path: 'index',
-    component: Layout,
-    children: [{
-      path: '/three',
-      component: four,
-      name: 'three',
-      meta: {
-        title: 'Development',
-        icon: 'menu'
-      }
-    }]
-  },
-
-  {
-    path: 'index',
-    component: Layout,
-    children: [{
-      path: '/four',
-      component: six,
-      name: 'four',
-      meta: {
-        title: 'Bulk',
-        icon: 'deliver'
-      }
-    }]
-  },
-  {
-  path: 'mater_center',
+  path: '/mater_center',
     component: Layout,
     meta: {
       title: 'Mater Center',
       icon: 'documentation'
     },
     children: [{
-      path: 'one',
+      path: 'fabric',
       component: one,
       name: 'fabric',
       meta: {
@@ -161,21 +132,21 @@ export default [
         //icon: 'edit'
       },
     },{
-      path: 'one',
+      path: 'color',
       component: one,
       name: 'color',
       meta: {
       title: 'Color',
     },
     },{
-      path: 'one',
+      path: 'quantity',
       component: one,
       name: 'quantity',
       meta: {
       title: 'Quantity',
     },
     },{
-      path: 'one',
+      path: 'destination',
       component: one,
       name: 'destination',
       meta: {
@@ -183,7 +154,7 @@ export default [
         //icon: 'edit'
       },
     },{
-      path: 'one',
+      path: 'sample_request',
       component: one,
       name: 'sample_request',
       meta: {
@@ -191,7 +162,7 @@ export default [
         //icon: 'edit'
       },
     },{
-      path: 'one',
+      path: 'customer_manuel',
       component: one,
       name: 'customer_manuel',
       meta: {

@@ -7,7 +7,10 @@ export default {
     logIn: '登录',
     username: '账号',
     password: '密码',
-   
+  },
+  navbar: {
+    setting: "设置",
+    logOut: "登出"
   },
   
 }

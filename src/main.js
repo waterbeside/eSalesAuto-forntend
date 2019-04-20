@@ -16,7 +16,7 @@ Vue.use(ElementUI, {
 
 // global css
 import './assets/global.css'
-import './assets/style/main.scss'
+import './assets/style/index.scss'
 
 
 

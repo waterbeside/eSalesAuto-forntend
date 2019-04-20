@@ -12,29 +12,24 @@
 
         <screenfull class="right-menu-item hover-effect" />
 
-       
-
-        <lang-select class="right-menu-item hover-effect" />
+        <!-- <lang-select class="right-menu-item hover-effect" /> -->
 
       </template>
 
       <el-dropdown class="avatar-container right-menu-item hover-effect" trigger="click">
         <div class="avatar-wrapper">
-          <span class="username">admin</span> <i class="el-icon-caret-bottom" />
+          <span class="username">{{name}}</span> <i class="el-icon-caret-bottom" />
         </div>
         <el-dropdown-menu slot="dropdown">
-          <router-link to="/">
+          <a target="_blank" href="/">
             <el-dropdown-item>
-              {{ $t('navbar.dashboard') }}
-            </el-dropdown-item>
-          </router-link>
-          <a target="_blank" href="https://github.com/PanJiaChen/vue-element-admin/">
-            <el-dropdown-item>
-              {{ $t('navbar.github') }}
+             <i class="el-icon-setting"></i> {{ $t('navbar.setting') }}
             </el-dropdown-item>
           </a>
           <el-dropdown-item divided>
-            <span style="display:block;" @click="logout">{{ $t('navbar.logOut') }}</span>
+            <span style="display:block;" @click="logout">
+              <svg-icon icon-class="signout"  class="font-icon" />  {{ $t('navbar.logOut') }}
+              </span>
           </el-dropdown-item>
         </el-dropdown-menu>
       </el-dropdown>
@@ -81,7 +76,7 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-@import '~@/assets/style/variables.scss';
+@import '~@/assets/style/_variables.scss';
 .navbar {
   height: 50px;
   overflow: hidden;
