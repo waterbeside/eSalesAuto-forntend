@@ -47,11 +47,11 @@
         <el-table-column prop="style_no" label="Style_No" width="120" fixed  > </el-table-column>
         <!-- season -->
         <el-table-column prop="season" label="Season" width="90" ></el-table-column>
-        <el-table-column prop="garment_wash" label="Garment_Wash" width="120"></el-table-column>
+        <el-table-column prop="garment_wash" label="Garment_Wash" width="150"></el-table-column>
         <el-table-column prop="garment_part" label="Garment_Part" width="120" ></el-table-column>
         <el-table-column prop="color_combo" label="Color_Combo" width="120"></el-table-column>
-        <el-table-column prop="customer_fab_code" label="Customer_Fab_Code" width="150"></el-table-column>
-        <el-table-column prop="collar_cuff_size" label="Collar_Cuff_Size" width="120"></el-table-column>
+        <el-table-column prop="customer_fab_code" label="Customer_Fab_Code" width="180"></el-table-column>
+        <el-table-column prop="collar_cuff_size" label="Collar_Cuff_Size" width="180"></el-table-column>
         <el-table-column prop="remark" label="Remark" width="120"></el-table-column>
         <el-table-column   label="操作" width="120" fixed="right">
           <template slot-scope="scope">
