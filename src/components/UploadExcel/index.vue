@@ -28,9 +28,10 @@ export default {
     }
   },
   methods: {
-    generateData({ header, results }) {
+    generateData({ header, results,error }) {
       this.excelData.header = header
       this.excelData.results = results
+      this.excelData.error = error
       this.onSuccess && this.onSuccess(this.excelData)
     },
     handleDrop(e) {
@@ -84,12 +85,20 @@ export default {
         const reader = new FileReader()
         reader.onload = e => {
           const data = e.target.result
-          const workbook = XLSX.read(data, { type: 'array' })
-          const firstSheetName = workbook.SheetNames[0]
-          const worksheet = workbook.Sheets[firstSheetName]
-          const header = this.getHeaderRow(worksheet)
-          const results = XLSX.utils.sheet_to_json(worksheet)
-          this.generateData({ header, results })
+          var header = null
+          var results = null
+          var error = null
+          try {
+            const workbook = XLSX.read(data, { type: 'array' }) 
+            const firstSheetName = workbook.SheetNames[0]
+            const worksheet = workbook.Sheets[firstSheetName]
+            header = this.getHeaderRow(worksheet)
+            results = XLSX.utils.sheet_to_json(worksheet)
+          } catch (err) {
+            error = err
+          }
+         
+          this.generateData({ header, results,error })
           this.loading = false
           resolve()
         }

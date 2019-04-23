@@ -184,35 +184,52 @@ export default {
   methods: {
     //
     beforeUpload(file) {
-      const isLt1M = file.size / 1024 / 1024 < 1
+      let isLt1M = file.size / 1024 / 1024 < 2 
       this.is_listLoading = true;
       if (isLt1M) {
         this.is_listLoading = false;
         return true
       }
       this.$message({
-        message: 'Please do not upload files larger than 1m in size.',
+        message: 'Please do not upload files larger than 2m in size.',
         type: 'warning'
       })
       this.is_listLoading = false;
       return false
     },
-    handleSuccess({ results, header }) {
+    handleSuccess({ results, header ,error }) {
       let tableData = [];
       let tableHeader = [];
+      if(error){
+        console.log(error.message)
+        this.$message({
+          message:'你上我传的表格似乎不太符合规范格式，请检查后重新上传',
+          type: 'warning'
+        })
+        return false;
+      }
       results.forEach(function(value, index, array) {
         value.id = index+1;
         value.edit = false;
         tableData.push(changeCaseJsonKey(array[index]));
       });
+
       for(var i=0;i<header.length;i++){
         tableHeader.push(header[i].toLowerCase());
       }
+      if(!tableHeader.includes("season") || !tableHeader.includes('style_no') || !tableHeader.includes('garment_wash') ){
+        this.$message({
+          message: '你上我传的表格似乎不太符合规范格式，请检查后重新上传',
+          type: 'warning'
+        })
+        return false;
+      }
+      
       // this.tableData_o = [...tableData]
       this.tableData = tableData;
       this.tableHeader = tableHeader
       this.is_hasUploadExcel = true;
-      console.log(tableData);
+      // console.log(tableData);
       this.uploadExcelTime = moment().format('YYYY-MM-DD HH:mm:ss');
     },
     //关闭对话框
