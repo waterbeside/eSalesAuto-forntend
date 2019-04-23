@@ -25,10 +25,10 @@
           <el-button type="primary" >查询</el-button>
         </el-form-item>
         <el-form-item>
-          <el-button type="primary" @click="handleAdd">新增</el-button>
+          <el-button type="success" @click="handleAdd" icon="el-icon-plus">新增</el-button>
         </el-form-item>
         <el-form-item>
-          <el-button type="primary" @click="handleBatchEdit">批量修改</el-button>
+          <el-button type="warning" @click="handleBatchEdit" icon="el-icon-edit">批量修改</el-button>
         </el-form-item>
       </el-form>
     </el-col>
