@@ -18,8 +18,9 @@ export function getInfo() {
 
 export function logout() {
   return request({
-    url: settings.apiBaseUrl+'/api/v1/user/logout',
-    method: 'post'
+    url: settings.apiBaseUrl+'/api/v1/passport',
+    method: 'delete'
   })
 }
+
 

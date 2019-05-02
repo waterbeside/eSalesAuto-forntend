@@ -5,7 +5,7 @@
       <div class="toolbar">
         <el-select v-model="formData.customer_code" placeholder="Customer Code">
           <el-option
-            v-for="item in selectBoxData.customer_code"
+            v-for="item in customer_code"
             :key="item.value"
             :label="item.label"
             :value="item.value"
@@ -100,6 +100,7 @@ import UploadExcelComponent from '@/components/UploadExcel/index.vue'
 import {changeCaseJsonKey} from '@/utils/common'
 import moment from 'moment'
 import EditExcelItem from './EditExcelItem'
+import { mapGetters } from 'vuex'
 
 
 export default {
@@ -125,16 +126,9 @@ export default {
         brand:'',
         garment_fty:'',
       },
+      // customer_code: [],
       selectBoxData:{
-        customer_code: [
-          {
-            value: '16761',
-            label: '16761'
-          }, {
-            value: '20491',
-            label: '20491',
-            disabled: true
-          }],
+        
         brand: [
           {
             value: 'FLA',
@@ -170,19 +164,40 @@ export default {
     },
   },
   computed: {
-   
+    customer_code(){
+      let udata = this.$store.getters.userData;
+      let customer_codes = udata.customer_code;
+      let returnData = [];
+      customer_codes.forEach(element => {
+        returnData.push({
+          value:element,label:element
+        })
+      });
+      if(returnData.length === 1){
+        this.formData.customer_code = returnData[0].value;
+      }
+      return returnData;
+    }
   },
   watch: {
     
   },
   mounted() {
-
+      console.log(this.customer_code);
   },
   beforeDestroy() {
    
   },
   methods: {
-    //
+    init(){
+      
+    },
+    getBrand(){
+
+    },
+    /** 
+     * 上转表格
+     */
     beforeUpload(file) {
       let isLt1M = file.size / 1024 / 1024 < 2 
       this.is_listLoading = true;
@@ -283,7 +298,6 @@ export default {
           return a[field].localeCompare(b[field]);
         })
       }
-      
     },
   }
 }

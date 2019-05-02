@@ -26,9 +26,9 @@ export default [
         meta: { title: 'Auto SPPO' }
     }, 
     {
-      path: 'auto_sppo',
+      path: 'auto_sppo2',
       component: () => import('@/views/AutoSPPO'),
-      name: 'AutoSppo',
+      name: 'AutoSppo2',
       meta: { title: 'Auto SPPO' }
     }, 
     ]},
