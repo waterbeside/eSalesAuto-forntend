@@ -4,60 +4,66 @@
     <el-col :span="24" class="toolbar" style="padding-bottom: 0px;">
       <el-form :inline="true" :model="filters">
         <el-form-item label="PPO_NO">
-          <el-input placeholder="ppo no"></el-input>
+          <el-input placeholder="PPO_NO" v-model="filters.ppo_no"></el-input>
         </el-form-item>
         <el-form-item label="Season">
-          <el-input  placeholder="season"></el-input>
+          <el-input  placeholder="Season" v-model="filters.season"></el-input>
         </el-form-item>
         <el-form-item label="Order Create Date">
             <el-date-picker
-              v-model="value7"
+              v-model="filters.date_range"
               type="daterange"
               align="right"
               unlink-panels
               range-separator="〜"
               start-placeholder="开始日期"
               end-placeholder="结束日期"
-              :picker-options="pickerOptions2"
+              :picker-options="pickerOptions"
             ></el-date-picker>
         </el-form-item>
         <el-form-item>
-          <el-button type="primary" >查询</el-button>
+          <el-button type="primary" @click='getList' icon="el-icon-search"></el-button>
         </el-form-item>
-        <el-form-item>
-          <el-button type="success" @click="handleAdd" icon="el-icon-plus">新增</el-button>
-        </el-form-item>
-        <el-form-item>
-          <el-button type="warning" @click="handleBatchEdit" icon="el-icon-edit">批量修改</el-button>
-        </el-form-item>
+      
+       
       </el-form>
+    </el-col>
+    <el-col :span="24" class="toolbar" style="text-align:right;">
+            <el-button type="success" @click="handleAdd" icon="el-icon-plus">新增</el-button>
+            <el-button type="warning" @click="handleBatchEdit" icon="el-icon-edit">批量修改</el-button>
     </el-col>
 
     <!--列表-->
     <el-table highlight-current-row style="width: 100%;"
-		:data="tableData.filter(data => !search || data.name.toLowerCase().includes(search.toLowerCase()))" style:="width: 100%">>
-		  <el-table-column type="selection" width="55"></el-table-column>
-      <el-table-column prop="ppo_no" label="PPO_NO"></el-table-column>
-      <el-table-column prop="creater" label="Creater"></el-table-column>
-	    <el-table-column prop="season" label="Season"></el-table-column>
-      <el-table-column prop="style_no" label="Style_No"></el-table-column>
-		  <el-table-column prop="garment_wash" label="Garment_Wash"></el-table-column>
-      <el-table-column label="" width="150">
+		:data="listData" 
+    v-loading="listLoading"
+    @selection-change="handleSelectionChange"
+    style:="width: 100%">
+		  <el-table-column type="selection" width="50" fixed></el-table-column>
+      <el-table-column prop="PPO_NO" label="PPO_NO" min-width="150"></el-table-column>
+      <el-table-column prop="Creater" label="Creater" width="120"></el-table-column>
+	    <el-table-column prop="Season" label="Season" width="100"></el-table-column>
+      <el-table-column prop="Style_No" label="Style_No"  width="120"></el-table-column>
+		  <el-table-column prop="Garment_Wash" label="Garment_Wash" width="160"></el-table-column>
+		  <el-table-column prop="Create_Time" label="创建时间" width="140"></el-table-column>
+      <el-table-column  label="操作"  width='100px' fixed="right">
         <template scope="scope">
-          <el-button size="small" @click="handleEdit(scope.$index, scope.row)">编辑</el-button>
-          <el-button type="danger" size="small" @click="handleDel(scope.$index, scope.row)">删除</el-button>
+          <el-button type="primary" size="small" @click="handleEdit(scope.$index, scope.row)" icon="el-icon-edit" circle></el-button>
+          <el-button type="danger" size="small" @click="handleDel(scope.$index, scope.row)" icon="el-icon-delete" circle plain></el-button>
         </template>
       </el-table-column>
     </el-table>
 
-    <!--工具条-->
+    <!--工具条:页码-->
     <el-col :span="24" class="toolbar">
-      <el-button type="danger" @click="batchRemove" :disabled="this.sels.length===0">批量删除</el-button>
+      <el-button type="danger" size="small" @click="handleBatchDelete" :disabled="this.multipleSelection.length === 0" icon="el-icon-delete" plain>批量删除</el-button>
       <el-pagination
         layout="prev, pager, next"
         @current-change="handleCurrentChange"
-        :page-size="20"
-        :total="total"
+        :page-size="pagination.pagesize"
+        :pager-count="5"
+        :current-page.sync="page"
+        :total="pagination.total"
         style="float:right;"
       ></el-pagination>
     </el-col>
@@ -89,7 +95,7 @@
         </el-form-item>
         
         <el-table
-          :data="tableData.filter(data => !search || data.name.toLowerCase().includes(search.toLowerCase()))" style:="width: 100%">
+          :data="listData.filter(data => !search || data.name.toLowerCase().includes(search.toLowerCase()))" style:="width: 100%">
           <el-table-column prop="garment_part" label="Garment_Part"></el-table-column>
           <el-table-column prop="customer_Fab_Code" label="Customer_fab_code"></el-table-column>
           <el-table-column prop="color_Combo" label="Color_combo"></el-table-column>
@@ -157,15 +163,10 @@
 
 <script>
 // import util from "../../common/js/util";
-//import NProgress from 'nprogress'
-// import {
-//   getUserListPage,
-//   removeUser,
-//   batchRemoveUser,
-//   editUser,
-//   addUser
-// // } from "../../api/api";
-
+import moment from 'moment'
+import NProgress from 'nprogress'
+import {getList as sppoList, del as sppoDel} from '@/api/sppo'
+import {sppoAPI} from '@/api'
 import AddView from './components/Add'
 
 export default {
@@ -174,13 +175,17 @@ export default {
   data() {
     return {
       filters: {
-        name: ""
+        ppo_no: "",
+        season: "",
+        date_range:[],
       },
-      users: [],
-      total: 0,
+      pagination:{
+        total:0,
+        pagesize:20,
+      },
       page: 1,
       listLoading: false,
-      sels: [], //列表选中列
+      multipleSelection: [], //列表选中列
 
       editFormVisible: false, //编辑界面是否显示
       editLoading: false,
@@ -199,23 +204,9 @@ export default {
 
       addFormVisible: false, //新增界面是否显示
       addLoading: false,
-      // addFormRules: {
-      //   name: [{ required: true, message: "请输入姓名", trigger: "blur" }]
-      // },
-      // //新增界面数据
-      // addForm: {
-      //   name: "",
-      //   sex: -1,
-      //   age: 0,
-      //   birth: "",
-      //   addr: ""
-      // },
       
-
       batcheditFormVisible: false,   //批量更新界面是否显示
-      
-
-      pickerOptions2: {
+      pickerOptions: {
         shortcuts: [
           {
             text: "最近一周",
@@ -245,70 +236,116 @@ export default {
             }
           }]
 			},
-			value6: "",
-      value7: "",
-			tableData: [{
-          ppo_no:'KSF19FF0100001',
-          creater:'Winson Qi',
-          season: '20Q1',
-          style_no: 'BB20011037',
-          garment_wash: 'Non-Wash'
-      }],
+			listData: [],
 			search: ''
     };
   },
+  
+  
   methods: {
-    //性别显示转换
-    formatSex: function(row, column) {
-      return row.sex == 1 ? "男" : row.sex == 0 ? "女" : "未知";
-    },
+    //点击翻页
     handleCurrentChange(val) {
-      this.page = val;
-      // this.getUsers();
+      this.pagination.page = val;
+      this.getList();
     },
     //关闭添加窗口
     handleCloseAddDialog(){
       this.addFormVisible  = false;
     },
     handleBeforeCloseAddDialog(done){
-      console.log(1)   
       done() ;
     },
-    //获取用户列表
+    //改变选择
+    handleSelectionChange: function(val) {
+      this.multipleSelection = val;
+      console.log(this.multipleSelection );
+
+    },
+    //获取列表内容
     getList() {
-      let para = {
+      console.log(sppoAPI.getList);
+      let param = {
         page: this.page,
-        name: this.filters.name
+        ppo_no: this.filters.ppo_no,
+        season: this.filters.season,
       };
+      //处理时间
+      let date_range = this.filters.date_range;
+      param.date_start = typeof(date_range[0])!="undefined" && date_range[0] ? moment(date_range[0]).valueOf() : 0 ;
+      param.date_end = typeof(date_range[1])!="undefined" && date_range[1] ? moment(date_range[1]).valueOf() : 0 ;
+      if(this.listLoading){
+        return false;
+      }
+      // console.log(sppoGetList);return;
       this.listLoading = true;
-      //NProgress.start();
-      // getUserListPage(para).then(res => {
-      //   this.total = res.data.total;
-      //   this.users = res.data.users;
-      //   this.listLoading = false;
-      //   //NProgress.done();
-      // });
+      NProgress.start();
+      sppoAPI.getList(param).then(res=>{
+        let data = res.data;
+        this.listData = data.list.map((item,index)=>{
+          item.Create_Time = moment(item.Create_Time).format('YYYY-MM-DD HH:mm');
+          return item
+        });
+        this.pagination.pagesize= data.pagination.pagesize;
+        this.pagination.total= data.pagination.total;
+        this.page= data.pagination.page;
+        this.$message({
+          message: "加载成功",
+          type: "success"
+        });
+        this.listLoading = false;
+        NProgress.done();
+      }).catch(error=>{
+        NProgress.done();
+        this.listLoading = false;
+      })
+
     },
     //删除
     handleDel: function(index, row) {
       this.$confirm("确认删除该记录吗?", "提示", {
         type: "warning"
-      })
-        .then(() => {
-          this.listLoading = true;
-          //NProgress.start();
-          let para = { id: row.id };
-          removeUser(para).then(res => {
+      }).then(() => {
+        this.listLoading = true;
+        //NProgress.start();
+        let datas = { id: row.ID };
+        sppoAPI.del(datas).then(res => {
+          this.listLoading = false;
+          //NProgress.done();
+          this.$message({
+            message: "删除成功",
+            type: "success"
+          })
+          this.getList();
+        }).catch((err) => {
             this.listLoading = false;
-            //NProgress.done();
-            this.$message({
-              message: "删除成功",
-              type: "success"
-            });
-            // this.getUsers();
-          });
-        })
-        .catch(() => {});
+        });
+      })
+        
+    },
+    //批量删除
+    handleBatchDelete:function(){
+      var ids = this.multipleSelection.map(item => item.ID).toString();
+      this.$confirm("确认删除选中记录吗？", "提示", {
+        type: "warning"
+      })
+      .then(() => {
+        this.listLoading = true;
+        //NProgress.start();
+        let datas = { id: ids };
+        sppoAPI.del(datas).then(res => {
+          this.listLoading = false;
+          //NProgress.done();
+          this.$message({
+            message: "删除成功",
+            type: "success"
+          })
+          this.getList();
+        }).catch((err) => {
+            this.listLoading = false;
+        });
+        
+      })
+
     },
     //显示编辑界面
     handleEdit: function(index, row) {
@@ -318,13 +355,7 @@ export default {
     //显示新增界面
     handleAdd: function() {
       this.addFormVisible = true;
-      this.addForm = {
-        name: "",
-        sex: -1,
-        age: 0,
-        birth: "",
-        addr: ""
-      };
+     
     },
     //显示批量更新界面
     handleBatchEdit:function(){
@@ -353,27 +384,24 @@ export default {
         }
       });
     },
-    selsChange: function(sels) {
-      this.sels = sels;
-    },
-    //批量删除
-    batchRemove: function() {
-      var ids = this.sels.map(item => item.id).toString();
-      this.$confirm("确认删除选中记录吗？", "提示", {
-        type: "warning"
-      })
-        .then(() => {
-          this.listLoading = true;
-          //NProgress.start();
-          let para = { ids: ids };
-          
-        })
-        .catch(() => {});
-    }
+   
   },
   mounted() {
-    // this.getUsers();
-  }
+    console.log('mounted')
+
+  },
+  created () {
+    console.log('created')
+    this.getList();
+
+  },
+  activated() {
+    console.log('activated')
+
+
+    // console.log(this.visible);
+    // console.log(this.visible);
+  },
 };
 </script>
 
