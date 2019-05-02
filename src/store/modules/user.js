@@ -8,7 +8,8 @@ const state = {
   name: '',
   avatar: '',
   introduction: '',
-  roles: []
+  roles: [],
+  data:null,
 }
 
 const mutations = {
@@ -29,6 +30,9 @@ const mutations = {
   },
   SET_UID: (state, uid) => {
     state.uid = uid
+  },
+  SET_USER_DATA: (state, data) => {
+    state.data = data
   }
 }
 
@@ -66,6 +70,7 @@ const actions = {
         commit('SET_ROLES', roles)
         commit('SET_NAME', username)
         commit('SET_UID', uid)
+        commit('SET_USER_DATA', data)
 
         // commit('SET_AVATAR', avatar)
         // commit('SET_INTRODUCTION', introduction)
@@ -82,6 +87,9 @@ const actions = {
       logout(state.token).then(() => {
         commit('SET_TOKEN', '')
         commit('SET_ROLES', [])
+        commit('SET_NAME', '')
+        commit('SET_UID', 0)
+        commit('SET_USER_DATA', null)
         removeToken()
         resetRouter()
         resolve()
@@ -96,6 +104,9 @@ const actions = {
     return new Promise(resolve => {
       commit('SET_TOKEN', '')
       commit('SET_ROLES', [])
+      commit('SET_NAME', '')
+      commit('SET_UID', 0)
+      commit('SET_USER_DATA', null)
       removeToken()
       resolve()
     })
