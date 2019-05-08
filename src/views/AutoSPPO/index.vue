@@ -24,13 +24,10 @@
         <el-form-item>
           <el-button type="primary" @click='getList' icon="el-icon-search"></el-button>
         </el-form-item>
-      
-       
       </el-form>
     </el-col>
     <el-col :span="24" class="toolbar" style="text-align:right;">
             <el-button type="success" @click="handleAdd" icon="el-icon-plus">新增</el-button>
-            <el-button type="warning" @click="handleBatchEdit" icon="el-icon-edit">批量修改</el-button>
     </el-col>
 
     <!--列表-->
@@ -40,7 +37,12 @@
     @selection-change="handleSelectionChange"
     style:="width: 100%">
 		  <el-table-column type="selection" width="50" fixed></el-table-column>
-      <el-table-column prop="PPO_NO" label="PPO_NO" min-width="150"></el-table-column>
+      <el-table-column prop="PPO_NO" label="PPO_NO" min-width="150">
+         <div slot-scope="scope"  >
+            <a :href="'http://192.168.7.211/ReportServer/Pages/ReportViewer.aspx?%2fGEK%2fSales%2fSales+F01%2fSPPOReportFile%2fSPPOReport&ppo_no='+scope.row['PPO_NO']" target="_blank">{{scope.row['PPO_NO']}}</a>
+          </div>
+        
+      </el-table-column>
       <el-table-column prop="Creater" label="Creater" width="120"></el-table-column>
 	    <el-table-column prop="Season" label="Season" width="100"></el-table-column>
       <el-table-column prop="Style_No" label="Style_No"  width="120"></el-table-column>
@@ -48,7 +50,7 @@
 		  <el-table-column prop="Create_Time" label="创建时间" width="140"></el-table-column>
       <el-table-column  label="操作"  width='100px' fixed="right">
         <template scope="scope">
-          <el-button type="primary" size="small" @click="handleEdit(scope.$index, scope.row)" icon="el-icon-edit" circle></el-button>
+          <!-- <el-button type="primary" size="small" @click="handleEdit(scope.$index, scope.row)" icon="el-icon-edit" circle></el-button> -->
           <el-button type="danger" size="small" @click="handleDel(scope.$index, scope.row)" icon="el-icon-delete" circle plain></el-button>
         </template>
       </el-table-column>
@@ -57,6 +59,8 @@
     <!--工具条:页码-->
     <el-col :span="24" class="toolbar">
       <el-button type="danger" size="small" @click="handleBatchDelete" :disabled="this.multipleSelection.length === 0" icon="el-icon-delete" plain>批量删除</el-button>
+      <el-button type="primary"  size="small" @click="handleBatchEdit" :disabled="this.multipleSelection.length === 0" icon="el-icon-edit" plain>批量修改</el-button>
+
       <el-pagination
         layout="prev, pager, next"
         @current-change="handleCurrentChange"
@@ -69,93 +73,19 @@
     </el-col>
 
     <!--编辑界面-->
-    <el-dialog title="编辑" v-model="editFormVisible" :close-on-click-modal="false">
-      <el-form :inline="true" :model="filters">
-        <el-form-item label="Style_No">
-          <el-input placeholder="BB20011037"></el-input>
-        </el-form-item>
-        <el-form-item label="Season" style="margin-left:22px">
-          <el-input placeholder="20Q1"></el-input>
-        </el-form-item>
-        <el-form-item label="Garment_Wash">
-           <el-input placeholder="Non-Wash"></el-input>
-        </el-form-item>
-        <el-form-item label="Delivery" style="margin-left:5px">
-           <el-date-picker type="date" placeholder="2019-03-28"></el-date-picker>
-        </el-form-item>
-        <el-form-item label="Destination">
-           <el-dropdown>
-                <el-button>TDC<i class="el-icon-arrow-down el-icon--right"></i></el-button>
-                <el-dropdown-menu slot="dropdown">
-                   <el-dropdown-item>TDC</el-dropdown-item>
-                   <el-dropdown-item>YMG</el-dropdown-item>
-                   <el-dropdown-item>GEG</el-dropdown-item>
-                </el-dropdown-menu>
-           </el-dropdown>
-        </el-form-item>
-        
-        <el-table
-          :data="listData.filter(data => !search || data.name.toLowerCase().includes(search.toLowerCase()))" style:="width: 100%">
-          <el-table-column prop="garment_part" label="Garment_Part"></el-table-column>
-          <el-table-column prop="customer_Fab_Code" label="Customer_fab_code"></el-table-column>
-          <el-table-column prop="color_Combo" label="Color_combo"></el-table-column>
-          <el-table-column prop="ldstd" label="LD_STD"></el-table-column>
-          <el-table-column prop="collar_Cuff_Size" label="Collar_cuff_size"></el-table-column>
-          <el-table-column prop="quantity" label="Quantity"></el-table-column>
-          <el-table-column prop="unit" label="Unit"></el-table-column>
-          <el-table-column prop="remark" label="Remark"></el-table-column>
-	     </el-table>
-      </el-form>
-
-      <div slot="footer" class="dialog-footer">
-        <el-button @click.native="addFormVisible = false">取消</el-button>
-        <el-button type="primary" @click.native="addSubmit" :loading="addLoading">提交</el-button>
-      </div>
-
+    <el-dialog title="编辑" :visible.sync="editFormVisible" :close-on-click-modal="false">
+      <edit-view   ref="myEditBox"  />     
     </el-dialog>
 
     <!--新增界面-->
-		<el-dialog title="添加SPPO"  :visible.sync="addFormVisible"  width="80%" :before-close="handleBeforeCloseAddDialog">
-      <add-view @close="handleCloseAddDialog" />
+		<el-dialog title="添加SPPO"  :visible.sync="addFormVisible"  width="80%" :before-close="handleBeforeCloseAddDialog" :close-on-click-modal="false" >
+      <add-view @close="handleCloseAddDialog" ref="myAddBox" @OK="handleAddSuccess"/>
     </el-dialog>
 
   
     <!-- 批量更新界面 -->
-    <el-dialog title="编辑" v-model="batcheditFormVisible" :close-on-click-modal="false">
-      <el-form :inline="true" :model="filters">
-        <el-form-item label="Season" style="margin-left:22px">
-          <el-input placeholder=""></el-input>
-        </el-form-item>
-        <el-form-item label="Garment_Wash">
-           <el-dropdown>
-                <el-button><i class="el-icon-arrow-down el-icon--right"></i></el-button>
-                <el-dropdown-menu slot="dropdown">
-                   <el-dropdown-item>Garment Wash</el-dropdown-item>
-                   <el-dropdown-item>Non Wash</el-dropdown-item>
-                   <el-dropdown-item>...</el-dropdown-item>
-                </el-dropdown-menu>
-           </el-dropdown>
-        </el-form-item>
-        <el-form-item label="Delivery" style="margin-left:5px">
-           <el-date-picker type="date" placeholder=""></el-date-picker>
-        </el-form-item>
-        <el-form-item label="Destination">
-           <el-dropdown>
-                <el-button><i class="el-icon-arrow-down el-icon--right"></i></el-button>
-                <el-dropdown-menu slot="dropdown">
-                   <el-dropdown-item>TDC</el-dropdown-item>
-                   <el-dropdown-item>YMG</el-dropdown-item>
-                   <el-dropdown-item>GEG</el-dropdown-item>
-                </el-dropdown-menu>
-           </el-dropdown>
-        </el-form-item>
-      </el-form>
-
-      <div slot="footer" class="dialog-footer">
-        <el-button @click.native="addFormVisible = false">取消</el-button>
-        <el-button type="primary" @click.native="addSubmit" :loading="addLoading">提交</el-button>
-      </div>
-
+    <el-dialog title="批量编辑" :visible.sync="batcheditFormVisible" width="500" :close-on-click-modal="false">
+      <edit-batch-view @close="handleCloseEditBatchDialog" ref="myBathEditBox" @OK="handleEditBathSuccess"/>
     </el-dialog>
 
   </div>
@@ -165,12 +95,13 @@
 // import util from "../../common/js/util";
 import moment from 'moment'
 import NProgress from 'nprogress'
-import {getList as sppoList, del as sppoDel} from '@/api/sppo'
 import {sppoAPI} from '@/api'
 import AddView from './components/Add'
+import EditView from './components/Edit'
+import EditBatchView from './components/EditBatch'
 
 export default {
-  components: { AddView },
+  components: { AddView ,EditBatchView, EditView},
 
   data() {
     return {
@@ -189,18 +120,16 @@ export default {
 
       editFormVisible: false, //编辑界面是否显示
       editLoading: false,
-      editFormRules: {
-        name: [{ required: true, message: "请输入姓名", trigger: "blur" }]
-      },
+     
       //编辑界面数据
-      editForm: {
-        id: 0,
-        name: "",
-        sex: -1,
-        age: 0,
-        birth: "",
-        addr: ""
-      },
+      // editForm: {
+      //   id: 0,
+      //   name: "",
+      //   sex: -1,
+      //   age: 0,
+      //   birth: "",
+      //   addr: ""
+      // },
 
       addFormVisible: false, //新增界面是否显示
       addLoading: false,
@@ -240,7 +169,16 @@ export default {
 			search: ''
     };
   },
-  
+  watch:{
+    addFormVisible(val){
+      if(val){
+        if(typeof(this.$refs.myAddBox)=='object' &&typeof(this.$refs.myAddBox.init)=='function'){
+          this.$refs.myAddBox.init();
+        }
+      }
+    }
+
+  },
   
   methods: {
     //点击翻页
@@ -259,7 +197,6 @@ export default {
     handleSelectionChange: function(val) {
       this.multipleSelection = val;
       console.log(this.multipleSelection );
-
     },
     //获取列表内容
     getList() {
@@ -301,7 +238,7 @@ export default {
 
     },
     //删除
-    handleDel: function(index, row) {
+    handleDel(index, row) {
       this.$confirm("确认删除该记录吗?", "提示", {
         type: "warning"
       }).then(() => {
@@ -323,7 +260,7 @@ export default {
         
     },
     //批量删除
-    handleBatchDelete:function(){
+    handleBatchDelete(){
       var ids = this.multipleSelection.map(item => item.ID).toString();
       this.$confirm("确认删除选中记录吗？", "提示", {
         type: "warning"
@@ -348,42 +285,48 @@ export default {
 
     },
     //显示编辑界面
-    handleEdit: function(index, row) {
+    handleEdit(index, row) {
       this.editFormVisible = true;
-      this.editForm = Object.assign({}, row);
+      // this.editForm = Object.assign({}, row);
     },
     //显示新增界面
-    handleAdd: function() {
+    handleAdd() {
       this.addFormVisible = true;
-     
     },
+    //提交成功
+    handleAddSuccess(){
+      this.page = 1;
+      this.filters= {
+        ppo_no: "",
+        season: "",
+        date_range:[],
+      };
+      this.getList();
+    },
+
     //显示批量更新界面
-    handleBatchEdit:function(){
+    handleBatchEdit(){
        this.batcheditFormVisible = true;   
+    },
+    handleEditBathSuccess(){
+      console.log(handleEditBathSuccess);
+    },
+    handleCloseEditBatchDialog(){
+      this.batcheditFormVisible  = false;
     },
 
     //编辑
     editSubmit: function() {
-      this.$refs.editForm.validate(valid => {
-        if (valid) {
-          this.$confirm("确认提交吗？", "提示", {}).then(() => {
-            this.editLoading = true;
-            //NProgress.start();
-          })
-        }
-      });
+      // this.$refs.editForm.validate(valid => {
+      //   if (valid) {
+      //     this.$confirm("确认提交吗？", "提示", {}).then(() => {
+      //       this.editLoading = true;
+      //       //NProgress.start();
+      //     })
+      //   }
+      // });
     },
-    //新增
-    addSubmit: function() {
-      this.$refs.addForm.validate(valid => {
-        if (valid) {
-          this.$confirm("确认提交吗？", "提示", {}).then(() => {
-            this.addLoading = true;
-            
-            });
-        }
-      });
-    },
+   
    
   },
   mounted() {
