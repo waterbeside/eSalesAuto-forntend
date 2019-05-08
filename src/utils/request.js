@@ -7,7 +7,7 @@ import { getToken } from '@/utils/auth'
 const service = axios.create({
   // baseURL: process.env.VUE_APP_BASE_API, // api 的 base_url
   // withCredentials: true, // 跨域请求时发送 cookies
-  timeout: 5000 // request timeout
+  timeout: 60*1000 // request timeout
 })
 
 // request interceptor
@@ -45,7 +45,7 @@ service.interceptors.response.use(
       Message({
         message: res.msg,
         type: 'error',
-        duration: 5 * 1000
+        duration: 8 * 1000
       })
       // 10004:非法的token; 10012:其他客户端登录了;  10014:Token 过期了;
       if (res.code === 10004 || res.code === 10012 || res.code === 10014) {
