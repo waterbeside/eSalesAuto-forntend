@@ -23,15 +23,42 @@ export default [
         path: 'auto_sppo',
         component: () => import('@/views/AutoSPPO'),
         name: 'AutoSppo',
+        icon: 'documentation',
         meta: { title: 'Auto SPPO' }
     }, 
-    {
-      path: 'auto_sppo2',
-      component: () => import('@/views/AutoSPPO'),
-      name: 'AutoSppo2',
-      meta: { title: 'Auto SPPO' }
-    }, 
+    // {
+    //   path: 'auto_sppo2',
+    //   component: () => import('@/views/AutoSPPO'),
+    //   name: 'AutoSppo2',
+    //   meta: { title: 'Auto SPPO' }
+    // }, 
     ]},
+    {
+      path: '/bulk',
+      component: Layout,
+      redirect: '/bulk/auto_go',
+      name: 'bulk',
+      meta: {
+        title: 'bulk',
+        icon: 'documentation'
+      },
+      children: [
+        {
+          path: 'auto_go',
+          component: () => import('@/views/AutoGO'),
+          name: 'AutoGo',
+          icon: 'documentation',
+          meta: { title: 'Auto GO' }
+      }, 
+      // {
+      //   path: 'auto_sppo2',
+      //   component: () => import('@/views/AutoSPPO'),
+      //   name: 'AutoSppo2',
+      //   meta: { title: 'Auto SPPO' }
+      // }, 
+      ]},
+
+
   // {
   //   path: '/example',
   //   component: Layout,
@@ -64,56 +91,56 @@ export default [
   //   ]
   // },
 
- {
-  path: '/customer_data',
-    component: Layout,
-    meta: {
-      title: 'Customer Data',
-      icon: 'location'
-    },
-    children: [{
-        path: 'pech_pack',
-        component: one,
-        name: 'pech_pack',
-        meta: {
-          title: 'Tech Pack',
-          //icon: 'edit'
-        },
-        item: 0,
-      },{
-        path: 'dev_bom',
-        component: one,
-        name: 'dev_bom',
-        meta: {
-          title: 'Dev BOM',
-          //icon: 'edit'
-        },
-      }, {
-      path: 'two',
-      component: two,
-      name: 'two',
-      meta: {
-        title: 'Bulk Order',
-        //icon: 'edit'
-      },
-    }, {
-      path: 'bulk_bom',
-      component: five,
-      name: 'bulk_bom',
-      meta: {
-        title: 'Bulk BOM',
-        //icon: 'edit'
-      },
-    }, {
-      path: 'contract',
-      component: five,
-      name: 'contract',
-      meta: {
-        title: 'Contract',
-        //icon: 'edit'
-      },
-    }]
-  },
+//  {
+//   path: '/customer_data',
+//     component: Layout,
+//     meta: {
+//       title: 'Customer Data',
+//       icon: 'location'
+//     },
+//     children: [{
+//         path: 'pech_pack',
+//         component: one,
+//         name: 'pech_pack',
+//         meta: {
+//           title: 'Tech Pack',
+//           //icon: 'edit'
+//         },
+//         item: 0,
+//       },{
+//         path: 'dev_bom',
+//         component: one,
+//         name: 'dev_bom',
+//         meta: {
+//           title: 'Dev BOM',
+//           //icon: 'edit'
+//         },
+//       }, {
+//       path: 'two',
+//       component: two,
+//       name: 'two',
+//       meta: {
+//         title: 'Bulk Order',
+//         //icon: 'edit'
+//       },
+//     }, {
+//       path: 'bulk_bom',
+//       component: five,
+//       name: 'bulk_bom',
+//       meta: {
+//         title: 'Bulk BOM',
+//         //icon: 'edit'
+//       },
+//     }, {
+//       path: 'contract',
+//       component: five,
+//       name: 'contract',
+//       meta: {
+//         title: 'Contract',
+//         //icon: 'edit'
+//       },
+//     }]
+//   },
 
  
   {

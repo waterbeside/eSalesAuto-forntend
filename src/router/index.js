@@ -68,15 +68,13 @@ export const constantRoutes = [
     path: '',
     component: Layout,
     redirect: 'welcome',
-    children: [
-      {
-        path: 'welcome',
-        component: () => import('@/views/welcome/index'),
-        name: 'welcome',
-        meta: { title: 'welcome', icon: 'dashboard', noCache: true, affix: true }
-      }
-    ]
   },
+  {
+    path: 'welcome',
+    component: () => import('@/views/welcome/index'),
+    name: 'welcome',
+    meta: { title: 'welcome', icon: 'dashboard', noCache: true, affix: true }
+  }
 ]
   
 /**
