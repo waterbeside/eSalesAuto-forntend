@@ -1,5 +1,5 @@
 <template>
-	<el-dialog title="编辑 "  :visible.sync="open"  append-to-body :before-close="handleClose" >
+	<el-dialog title="更正"  :visible.sync="open"  append-to-body :before-close="handleClose" >
 
     <el-form label-width="180px" :rules="itemRule" :model="editingRow">
       <el-form-item label="Style_No" prop="style_no">
