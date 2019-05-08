@@ -40,7 +40,7 @@
       <upload-excel-component :on-success="handleSuccess" :before-upload="beforeUpload" v-show="!is_hasUploadExcel" class="upload-box" />
 
       <!-- 提示 -->
-      <el-alert   type="warning"  style="margin-bottom:12px;"> 
+      <el-alert   type="warning"  :closable="false" style="margin-bottom:12px;"> 
         <h3><i class="el-icon-warning"></i> 注意</h3>
         <div style="font-size:14px">
           <p >1、如果以前提交过相同的Style_NO数据，本次操作将会视作修改数据</p>
@@ -52,7 +52,7 @@
       <el-alert :title="'本次上传Excel的时间为:'+uploadExcelTime"  type="success" :closable="false" v-show="is_hasUploadExcel" style="margin-bottom:4px">  </el-alert>
       
       <!-- 提示：检查数据 -->
-      <el-alert  type="info"  v-show="is_showTips" style="margin-bottom:4px">
+      <el-alert  type="info"  v-show="is_showTips" :closable="false" style="margin-bottom:4px">
         <i class="el-icon-loading" v-show="is_checkingAll"></i> {{tips}}
       </el-alert>
       
@@ -193,8 +193,8 @@ export default {
   },
   watch:{
     is_showEditItem (a,b){
-      console.log(a)
-      console.log(b)
+      // console.log(a)
+      // console.log(b)
     },
     'formData.customer_code': {
         handler(newValue, oldValue) {
