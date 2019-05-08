@@ -85,7 +85,7 @@
   
     <!-- 批量更新界面 -->
     <el-dialog title="批量编辑" :visible.sync="batcheditFormVisible" width="500" :close-on-click-modal="false">
-      <edit-batch-view @close="handleCloseEditBatchDialog" ref="myBathEditBox" @OK="handleEditBathSuccess"/>
+      <edit-batch-view @close="handleCloseEditBatchDialog" ref="myBathEditBox" @OK="handleEditBathSuccess" :data="multipleSelection" />
     </el-dialog>
 
   </div>
@@ -172,11 +172,19 @@ export default {
   watch:{
     addFormVisible(val){
       if(val){
-        if(typeof(this.$refs.myAddBox)=='object' &&typeof(this.$refs.myAddBox.init)=='function'){
+        if(typeof(this.$refs.myAddBox)=='object' && typeof(this.$refs.myAddBox.init)=='function'){
           this.$refs.myAddBox.init();
         }
       }
-    }
+    },
+    batcheditFormVisible(val){
+      if(val){
+        if(typeof(this.$refs.myBathEditBox)=='object' && typeof(this.$refs.myBathEditBox.init)=='function'){
+          this.$refs.myBathEditBox.init();
+        }
+      }
+    },
+
 
   },
   

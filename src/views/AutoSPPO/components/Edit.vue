@@ -38,7 +38,7 @@
       </el-form>
 
      <div  class="dialog-footer" style="text-align:right; margin-top:40px;">
-      <el-button @click.native="handleClose = false">取消</el-button>
+      <el-button @click="handleClose = false">取消</el-button>
       <el-button type="primary"   :loading="is_submiting">提交</el-button>
     </div>
 </div>
