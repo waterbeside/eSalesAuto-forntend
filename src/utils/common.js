@@ -10,3 +10,17 @@ export function changeCaseJsonKey(jsonObj,type = 0){
 }
 
 
+export async function asyncForEach(arr, callback){
+    const length = arr.length;
+    const O = Object(arr);
+    let k = 0;
+    while (k < length) {
+      if (k in O) {
+        console.log('doing foreach...');
+        const kValue = O[k];
+        await callback(kValue, k, O);
+      }
+      k++;
+    }
+  };
+
