@@ -10,8 +10,15 @@ export function getList(params) {
   })
 }
 
-export function del(data) {
+export function add(data) {
+  return request({
+    url: settings.apiBaseUrl+'/api/v1/sppo',
+    method: 'post',
+    data
+  })
+}
 
+export function del(data) {
   // data = qs.stringify(data) ;
   console.log(data)
   return request({
@@ -21,4 +28,18 @@ export function del(data) {
   })
 }
 
+
+export function checkCustomerFabCodeExist(params){
+  return new Promise((resole,reject)=>{
+    request({
+      url: settings.apiBaseUrl+'/api/v1/sppo/check_customer_fab_code_exist',
+      method: 'get',
+      params
+    }).then(res=>{
+      resole(res.data.is_exist);
+    }).catch(error=>{
+      reject(error);
+    })
+  })
+}
 

@@ -1,9 +1,9 @@
 import request from '@/utils/request'
 import settings from '@/settings.js'
 
-export function getList(params) {
+export function getBrandCode(params) {
   return request({
-    url: settings.apiBaseUrl+'/api/v1/brand',
+    url: settings.apiBaseUrl+'/api/v1/gen_brand/get_brand_code',
     method: 'get',
     params
   })
