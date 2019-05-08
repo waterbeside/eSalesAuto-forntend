@@ -17,5 +17,15 @@ export function checkWashTypeExist(params) {
 
 }
 
+export function getWashTypes(params) {
+  return request({
+    url: settings.apiBaseUrl+'/api/v1/gen_wash_type/wash_types',
+    method: 'get',
+    params
+  })
+}
+
+
+
 
 
