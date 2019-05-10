@@ -15,6 +15,18 @@ export function getList(params) {
 }
 
 /**
+ * Sppo Detail
+ * @param Object data 
+ */
+export function getDetail(params) {
+  return request({
+    url: settings.apiBaseUrl+'/api/v1/sppo/detail',
+    method: 'get',
+    params
+  })
+}
+
+/**
  * 新建Sppo
  * @param Object data 
  */
