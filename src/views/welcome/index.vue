@@ -1,9 +1,24 @@
 <template>
 <div>
-  111
+   <h1>Welcome</h1>
 </div>
 </template>
 
 <script>
-
+  export default {
+    data() {
+      return {
+        dialogVisible: false
+      };
+    },
+    methods: {
+      handleClose(done) {
+        this.$confirm('确认关闭？')
+          .then(_ => {
+            done();
+          })
+          .catch(_ => {});
+      }
+    }
+  };
 </script>
