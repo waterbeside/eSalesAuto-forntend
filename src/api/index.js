@@ -1,6 +1,6 @@
 
 import { login, logout, getInfo } from '@/api/user'
-import { getList,add, del,checkCustomerFabCodeExist } from '@/api/sppo'
+import { getList,getDetail, add, del,checkCustomerFabCodeExist,batchEdit,edit } from '@/api/sppo'
 
 import {getBrandCode} from '@/api/genBrand'
 import {getFactoryIds} from '@/api/genFactory'
@@ -9,7 +9,7 @@ import {checkWashTypeExist,getWashTypes} from '@/api/genWash'
 import {getList as getCustomerFabCodes} from '@/api/masterFabricationLN'
 
 export let passportAPI = { login,logout,getInfo }
-export let sppoAPI =  { getList,add,del ,checkCustomerFabCodeExist}
+export let sppoAPI =  { getList,getDetail,add,del ,checkCustomerFabCodeExist,batchEdit,edit}
 export let assistAPI =  { 
     getBrandCode,
     getFactoryIds,
