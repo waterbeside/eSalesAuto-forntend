@@ -22,9 +22,16 @@ export default [
       {
         path: 'auto_sppo',
         component: () => import('@/views/AutoSPPO'),
-        name: 'AutoSppo',
+        name: 'autoSppo',
         icon: 'documentation',
-        meta: { title: 'Auto SPPO' }
+        meta: { title: 'Auto SPPO' ,noCache:false},
+        // children:[{
+        //   path:'edit',
+        //   name: 'editAutoSppo',
+        //   component: () => import('@/views/AutoSPPO/edit'),
+        //   hidden:true
+        // }]
+
     }, 
     // {
     //   path: 'auto_sppo2',
@@ -46,9 +53,9 @@ export default [
         {
           path: 'auto_go',
           component: () => import('@/views/AutoGO'),
-          name: 'AutoGo',
+          name: 'autoGo',
           icon: 'documentation',
-          meta: { title: 'Auto GO' }
+          meta: { title: 'Auto GO',noCache:false }
       }, 
       // {
       //   path: 'auto_sppo2',
