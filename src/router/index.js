@@ -67,7 +67,7 @@ export const constantRoutes = [
   {
     path: '',
     component: Layout,
-    redirect: 'welcome',
+    redirect: '/development/auto_sppo',
     children: [
       {
         path: 'welcome',
