@@ -2,6 +2,11 @@
  * Created by jiachenpan on 16/11/18.
  */
 
+const _ = require('lodash');
+import moment from 'moment'
+
+
+
 export function isExternal(path) {
   return /^(https?:|mailto:|tel:)/.test(path)
 }
@@ -50,3 +55,55 @@ export function isArray(arg) {
   }
   return Array.isArray(arg)
 }
+
+/**
+ * 检证color combo格式是否正确
+ */
+export function checkColorCombo(str,callback){
+  let code = 0;
+  let msg = '';
+  if(_.trim(str.substring(2,3)) != ''){
+    msg = "color_combo 第三位必须为空";
+    code = 1;
+  }
+  
+  if(typeof(callback)=='function') callback({code,msg});
+  return code !== 0 ? false : true;
+}
+
+/**
+ * 检证collar_cuff_size格式是否正确
+ */
+export function checkCollarCuffSize(str,callback){
+  let code = 0;
+  let msg = '';
+
+  let collar_cuff_size_array = str.split('*');
+  if(collar_cuff_size_array.length !==2){
+    code = 1
+  }else{
+    for(let el of collar_cuff_size_array){
+      let num = _.toNumber(el)
+      if( num != el || num <= 0){
+        code = 1
+        break;
+      }
+    }
+  }
+  if(code){
+    msg = "'collar_cuff_size'格式必须为:数字*数字";
+  }  
+  if(typeof(callback)=='function') callback({code,msg});
+  return code !== 0 ? false : true;
+}
+
+/**
+ * 交期验证
+ */
+export function checkDelivery(obj){
+  let now = moment(moment().format('YYYY-MM-DD')).unix();
+  let checkDate = moment(obj).unix();
+  return checkDate > now ;
+}
+
+
