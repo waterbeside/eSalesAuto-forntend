@@ -87,7 +87,7 @@
               <el-button @click="handleEditTableItem(scope)" type="primary" size="mini" icon="el-icon-edit"></el-button>
               <el-button @click="checkTableItem(scope.row,scope.$index)" size="mini" plain 
                 :type="checkBtnStyle[scope.row.check] ? checkBtnStyle[scope.row.check] : 'default'" 
-                :loading="scope.row.check === 2" 
+                :loading="scope.row.check === 2 || checkingRow.has(scope.$index)" 
                 :icon="checkBtnIcon[scope.row.check] ? checkBtnIcon[scope.row.check] : ''" >
                 检验
               </el-button>
@@ -101,8 +101,8 @@
     <!-- 底部按钮 -->
     <div  class="fixed-footer-bar" >
       <div>
-        <el-button @click.native="handleCloseDialog" ><i class="el-icon-back"></i></el-button>
-        <el-button @click.native="handleClearTableData" v-show="is_hasUploadExcel"><i class="el-icon-upload2"></i> 清除数据(重新上传)</el-button>
+        <el-button @click.native="handleCloseDialog" :disabled="is_checkingAll"><i class="el-icon-back"></i></el-button>
+        <el-button @click.native="handleClearTableData" v-show="is_hasUploadExcel" :disabled="is_checkingAll"><i class="el-icon-upload2"></i> 清除数据(重新上传)</el-button>
         
       </div>
       <div>
@@ -119,14 +119,16 @@
 </template>
 
 <script>
-var _ = require('lodash');
+const _ = require('lodash');
 import UploadExcelComponent from '@/components/UploadExcel/index.vue'
-import {changeCaseJsonKey,asyncForEach} from '@/utils/common'
+import {changeCaseJsonKey,asyncForEach,myCache} from '@/utils/common'
 import moment from 'moment'
 import EditExcelItem from './EditExcelItem'
 import { mapGetters } from 'vuex'
 
 import {sppoAPI,assistAPI} from '@/api'
+import { checkColorCombo,checkCollarCuffSize } from '@/utils/validate'
+
 
 // import {getBrandCode} from '@/api/genBrand'
 // import {getFactoryIds} from '@/api/genFactory'
@@ -166,6 +168,7 @@ export default {
       checkBtnIcon:['el-icon-close','el-icon-reading','','el-icon-check'],
       errorMsg:[],
       errorRow:[],
+      checkingRow:new Set(),
       // form_customer_code:'',
       formData:{
         customer_code:'',
@@ -187,15 +190,10 @@ export default {
       editingRow : { },
       editingRow_index : null,
       tempData:{}
-      // editingRowData : null,
-      
+      // editingRowData : null, 
     }
   },
   watch:{
-    is_showEditItem (a,b){
-      // console.log(a)
-      // console.log(b)
-    },
     'formData.customer_code': {
         handler(newValue, oldValue) {
           if(oldValue !== newValue && newValue){
@@ -210,13 +208,17 @@ export default {
       }else{
         this.loadingObj.close();
       }
-      
-    }
+    },
+    // is_checkingAll(val){
+    //   if(val){
+    //     this.loadingObj = this.$loading({'text':"检查格式中"})
+    //   }else{
+    //     this.loadingObj.close();
+    //   }
+    // }
   },
   computed: {
     is_checkAll(){
-      console.log(this.errorRow.length);
-      console.log(this.errorRow)
       return this.errorRow.length > 0 ? false : true;
     }
   },
@@ -298,7 +300,6 @@ export default {
         });
         this.selectBoxData.garment_fty = factory_selector_list;
         this.$store.commit('cacheData/SET_FACTORYS',factory_selector_list);
-        console.log(this.$store.state.cacheData.factorys);
       })
     },
     /** 
@@ -378,6 +379,9 @@ export default {
         let hasError = false;
         let errorMsg = this.errorMsg;
         errorMsg[index] = {}
+        this.checkingRow.add(index);
+        console.log('this.checkingRow');
+        console.log(this.checkingRow);
         if(!this.errorRow.includes(index)){
          this.errorRow.push(index);
         }
@@ -391,11 +395,10 @@ export default {
         let customer_fab_code = _.trim(row.customer_fab_code);
         let collar_cuff_size = _.trim(row.collar_cuff_size);
         
-
-
         row.check = 2; //状态进行中
         this.$set(this.tableData,index,row);
         row.error = [];
+
 
         checkEmptyField.forEach((item)=>{
           if( _.trim(row[item]) == ''){
@@ -405,11 +408,15 @@ export default {
           }
         })
         //color_combo 第三位必须为空格
-        if(color_combo != '' && _.trim(color_combo.substring(2,3)) != ''){
-          errorMsg[index].color_combo = "'color_combo'第三位必须为空格";
-          row.error.push('color_combo');
-          hasError = true;
-          // /^\s*$/
+        
+        if(color_combo != ''  ){
+          checkColorCombo(color_combo,(res)=>{
+            if(res.code !== 0){
+              errorMsg[index].color_combo = res.msg;
+              row.error.push('color_combo');
+              hasError = true;
+            }
+          })
         }
 
         //Customer_Fab_Code 相同Style_No, 相同Garment_Part, 只可以出现一个
@@ -430,14 +437,8 @@ export default {
             this.$set(this.tableData,otherdRowIndex,otherErrorRow);
           }
           try {
-            let checkFabCodeRes = this.getTempData('checkCustomerFabCodeExist_'+customer_fab_code);
-            console.log('checkFabCodeRes')
-            console.log(checkFabCodeRes)
-            
-            if(checkFabCodeRes === null){
-              checkFabCodeRes = await sppoAPI.checkCustomerFabCodeExist({customer_fab_code});
-              this.setTempData('checkCustomerFabCodeExist_'+customer_fab_code,checkFabCodeRes);
-            }
+            let checkFabCodeRes = await myCache.do('checkCustomerFabCodeExist:'+customer_fab_code,[assistAPI.checkCustomerFabCodeExist,{customer_fab_code}],600);
+
             if(checkFabCodeRes < 1){
               row.error.push('customer_fab_code');
               errorMsg[index]['customer_fab_code'] = "'customer_fab_code'不正确";
@@ -451,32 +452,22 @@ export default {
               row.check = 1;
             }
             this.$set(this.tableData,index,row);
+            this.checkingRow.delete(index);
             return false;
           }
         }
 
         //Collar_Cuff_Size 格式必须为【数字 * 数字】,比如39.5 * 5，并且Garment_Part是O或者F的时候必须要有值.否则红色标识出来.
-        if(garment_part!='' && ['F','O'].includes(garment_part)){
+        if(garment_part!='' && ['F','O','f','o'].includes(garment_part)){
           if( collar_cuff_size == ''){ //如果为空
             row.error.push('collar_cuff_size');
             errorMsg[index]['collar_cuff_size'] = "当Garment_Part是O或F时'collar_cuff_size'不能为空";
             hasError = true;
           }else{ 
-            let collar_cuff_size_array = collar_cuff_size.split('*');
-            if(collar_cuff_size_array.length !==2){
+            if(!checkCollarCuffSize(collar_cuff_size)){
               row.error.push('collar_cuff_size');
               errorMsg[index]['collar_cuff_size'] = "'collar_cuff_size'格式必须为:数字*数字";
               hasError = true;
-            }else{
-              for(let el of collar_cuff_size_array){
-                let num = _.toNumber(el)
-                if( num != el || num <= 0){
-                  row.error.push('collar_cuff_size');
-                  errorMsg[index]['collar_cuff_size'] = "'collar_cuff_size'格式必须为:数字*数字";
-                  hasError = true;
-                  break;
-                }
-              }
             }
           }
         }
@@ -484,11 +475,7 @@ export default {
 
         // Garment_Wash 判断ESCM的数据库有无此洗水
         try {
-          let checkWashTypeRes = this.getTempData('checkWashTypeExist_'+garment_wash);
-          if(checkWashTypeRes === null){
-            checkWashTypeRes = await assistAPI.checkWashTypeExist({garment_wash});  
-            this.setTempData('checkWashTypeExist_'+garment_wash,checkWashTypeRes);
-          }
+          let checkWashTypeRes = await myCache.do('checkWashTypeExist:'+garment_wash,[assistAPI.checkWashTypeExist,{garment_wash}],600);
           if(checkWashTypeRes < 1){
             row.error.push('garment_wash');
             errorMsg[index]['garment_wash'] = "'garment_wash'不正确";
@@ -501,31 +488,28 @@ export default {
             row.check = 1;
           }
           this.$set(this.tableData,index,row);
+          this.checkingRow.delete(index);
           return false;
         }
-        
-        try {
-          let checkPartRes = this.getTempData('checkFabricTypeExist_'+garment_part);
-          if(checkPartRes === null){
-            checkPartRes = await assistAPI.checkFabricTypeExist({garment_part});  
-            this.setTempData('checkFabricTypeExist_'+garment_part,checkPartRes);
-          }
 
+        try{
+          let checkPartRes = await myCache.do('checkGarmentPartExist:'+garment_part,[assistAPI.checkFabricTypeExist,{garment_part}],600);
           if(checkPartRes < 1){
             row.error.push('garment_part');
             errorMsg[index]['garment_part'] = "'garment_part'不正确";
             hasError = true;
           }
-        } catch (error) { 
+        } catch (error){
           if(hasError){
             row.check = 0; //状态为不合格
           }else{ 
             row.check = 1;
           }
           this.$set(this.tableData,index,row);
-
+          this.checkingRow.delete(index);
           return false;
         }
+      
         
         if(hasError){
           row.check = 0; //状态为不合格
@@ -533,27 +517,52 @@ export default {
           this.errorRow.splice(this.errorRow.findIndex(item => item === index), 1)
           row.check = 3;
         }
-        this.$set(this.tableData,index,row);
+
+        setTimeout(async ()=>{
+          this.$set(this.tableData,index,row);
+          this.checkingRow.delete(index);
+          return  hasError ? false : true
+
+        },300)
+        
+        
         // resolve( hasError ? false : true)
-        return  hasError ? false : true
       
     },
+
+   
 
     /** 
      * 检查全部
      */
-    async handleCheckAll(){
+    async handleCheckAll(i){
+      i = parseInt(i) || 0;
+      console.log('i')
+      console.log(i)
       this.is_checkingAll = true
       this.is_showTips = true
-
-      await asyncForEach(this.tableData,async (item,index)=>{
-          this.tips =  "正在检查第 "+index+" 条数据";
-          let res =  await this.checkTableItem(item,index);
-          console.log(res);
-      })
-      this.tips =  "检查完成!";
-
-      this.is_checkingAll = false
+      if(this.tableData[i]){
+        console.log('handleCheckAlli:'+i)
+        this.tips =  "正在检查第 "+i+" 条数据";
+        let res =  await this.checkTableItem(this.tableData[i],i);
+        i++
+        window.setTimeout(async ()=>{
+          await this.handleCheckAll(i);
+        },300)
+        return true
+      }else{
+        this.tips =  "检查完成!";
+        this.is_checkingAll = false;
+        return false
+      }
+      
+      // for(let i in this.tableData){
+      //   this.tips =  "正在检查第 "+i+" 条数据";
+      //   let res =  await this.checkTableItem(this.tableData[i],i);
+      // }
+      // this.tips =  "检查完成!";
+      // this.is_checkingAll = false
+      
     },
 
     /**
@@ -587,7 +596,7 @@ export default {
         data
       }
       sppoAPI.add(postData).then(res=>{
-        console.log(res)
+        // console.log(res)
         if(res.code === 0 ){
           let errorIndex = res.data.errorIndex;
           let errorStyleNoList = res.data.errorStyleNoList;
