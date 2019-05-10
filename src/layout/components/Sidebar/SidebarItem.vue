@@ -72,7 +72,7 @@ export default {
       // When there is only one child router, the child router is displayed by default
       if (showingChildren.length === 1) {
         // return true
-        return false
+        return typeof(children[0].top)!='undefined' && children[0].top ? true : false;
       }
 
       // Show parent if there are no child router to display
