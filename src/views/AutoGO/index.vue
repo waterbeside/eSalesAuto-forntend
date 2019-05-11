@@ -27,7 +27,7 @@
       </el-form>
     </el-col>
     <el-col :span="24" class="toolbar" style="text-align:right;">
-            <el-button type="success" @click="handleAdd" icon="el-icon-plus">新增</el-button>
+      <el-button type="success" @click="handleAdd" icon="el-icon-plus">新增</el-button>
     </el-col>
 
     <!--列表-->
@@ -35,6 +35,7 @@
 		:data="listData" 
     v-loading="listLoading"
     @selection-change="handleSelectionChange"
+    v-if="!is_refresh"
     style:="width: 100%">
 		  <el-table-column type="selection" width="50" fixed></el-table-column>
       <el-table-column prop="PPO_NO" label="PPO_NO" min-width="150">
@@ -50,7 +51,7 @@
 		  <el-table-column prop="Create_Time" label="创建时间" width="140"></el-table-column>
       <el-table-column  label="操作"  width='100px' fixed="right">
         <template scope="scope">
-          <!-- <el-button type="primary" size="small" @click="handleEdit(scope.$index, scope.row)" icon="el-icon-edit" circle></el-button> -->
+          <el-button type="primary" size="small" @click="handleEdit(scope.$index, scope.row)" icon="el-icon-edit" circle></el-button>
           <el-button type="danger" size="small" @click="handleDel(scope.$index, scope.row)" icon="el-icon-delete" circle plain></el-button>
         </template>
       </el-table-column>
@@ -73,22 +74,23 @@
     </el-col>
 
     <!--编辑界面-->
-    <el-dialog title="编辑" :visible.sync="editFormVisible" :close-on-click-modal="false">
-      <edit-view   ref="myEditBox"  />     
+    <el-dialog title="编辑" :visible.sync="is_editFormVisible" width="80%" :before-close="handleCloseEditDialog" :close-on-click-modal="false">
+      <edit-view   ref="myEditBox" @OK="handleEditSuccess" @close="handleCloseEditDialog" :data="editingRow" />     
     </el-dialog>
 
     <!--新增界面-->
-		<el-dialog title="添加SPPO"  :visible.sync="addFormVisible"  width="80%" :before-close="handleBeforeCloseAddDialog" :close-on-click-modal="false" >
-      <add-view @close="handleCloseAddDialog" ref="myAddBox" @OK="handleAddSuccess"/>
+		<el-dialog title="添加SPPO"  :visible.sync="is_addFormVisible"  width="80%" :before-close="handleBeforeCloseAddDialog" :close-on-click-modal="false" >
+      <add-view ref="myAddBox" @OK="handleAddSuccess"  @close="handleCloseAddDialog" />
     </el-dialog>
 
-  
     <!-- 批量更新界面 -->
-    <el-dialog title="批量编辑" :visible.sync="batcheditFormVisible" width="500" :close-on-click-modal="false">
-      <edit-batch-view @close="handleCloseEditBatchDialog" ref="myBathEditBox" @OK="handleEditBathSuccess" :data="multipleSelection" />
+    <el-dialog title="批量编辑" :visible.sync="is_batcheditFormVisible" width="500" :close-on-click-modal="false" >
+      <edit-batch-view ref="myBathEditBox" @OK="handleEditBathSuccess"  @close="handleCloseEditBatchDialog" :data="multipleSelection" />
     </el-dialog>
+      <router-view > </router-view>
 
   </div>
+
 </template>
 
 <script>
@@ -101,6 +103,7 @@ import EditView from './components/Edit'
 import EditBatchView from './components/EditBatch'
 
 export default {
+  name: 'autoSppo',
   components: { AddView ,EditBatchView, EditView},
 
   data() {
@@ -117,24 +120,13 @@ export default {
       page: 1,
       listLoading: false,
       multipleSelection: [], //列表选中列
-
-      editFormVisible: false, //编辑界面是否显示
-      editLoading: false,
      
-      //编辑界面数据
-      // editForm: {
-      //   id: 0,
-      //   name: "",
-      //   sex: -1,
-      //   age: 0,
-      //   birth: "",
-      //   addr: ""
-      // },
+      is_addFormVisible: false, //新增界面是否显示
+      is_batcheditFormVisible: false,   //批量更新界面是否显示
+      is_editFormVisible: false, //编辑界面是否显示
+      is_editSuccessfully:false, //是否成功编辑后返回
+      is_refresh:false,
 
-      addFormVisible: false, //新增界面是否显示
-      addLoading: false,
-      
-      batcheditFormVisible: false,   //批量更新界面是否显示
       pickerOptions: {
         shortcuts: [
           {
@@ -165,22 +157,31 @@ export default {
             }
           }]
 			},
-			listData: [],
-			search: ''
+      listData: [],
+      editingRow:null,
+      editingRow_index:0,
+
     };
   },
   watch:{
-    addFormVisible(val){
+    is_addFormVisible(val){
       if(val){
         if(typeof(this.$refs.myAddBox)=='object' && typeof(this.$refs.myAddBox.init)=='function'){
           this.$refs.myAddBox.init();
         }
       }
     },
-    batcheditFormVisible(val){
+    is_batcheditFormVisible(val){
       if(val){
         if(typeof(this.$refs.myBathEditBox)=='object' && typeof(this.$refs.myBathEditBox.init)=='function'){
           this.$refs.myBathEditBox.init();
+        }
+      }
+    },
+    is_editFormVisible(val){
+      if(val){
+        if(typeof(this.$refs.myEditBox)=='object' && typeof(this.$refs.myEditBox.init)=='function'){
+          this.$refs.myEditBox.init();
         }
       }
     },
@@ -196,7 +197,7 @@ export default {
     },
     //关闭添加窗口
     handleCloseAddDialog(){
-      this.addFormVisible  = false;
+      this.is_addFormVisible  = false;
     },
     handleBeforeCloseAddDialog(done){
       done() ;
@@ -243,6 +244,8 @@ export default {
         NProgress.done();
         this.listLoading = false;
       })
+      // this.is_refresh = true;
+      // this.is_refresh = false;
 
     },
     //删除
@@ -292,14 +295,11 @@ export default {
       })
 
     },
-    //显示编辑界面
-    handleEdit(index, row) {
-      this.editFormVisible = true;
-      // this.editForm = Object.assign({}, row);
-    },
+   
+    /***** 新增 ******/
     //显示新增界面
     handleAdd() {
-      this.addFormVisible = true;
+      this.is_addFormVisible = true;
     },
     //提交成功
     handleAddSuccess(){
@@ -311,34 +311,58 @@ export default {
       };
       this.getList();
     },
+     /***** 编辑 ******/
+    //显示编辑界面
+    handleEdit(index, row) {
+      console.log('row');
+      console.log(row);
+      this.editingRow       = Object.assign({},row);
+      this.editingRow_index = index;
+      this.is_editFormVisible = true;
+      // this.$router.push({name: 'editAutoSppo', query: {ppo_no: this.editingRow.PPO_NO}});
+      
+    },
+    //关闭编辑界而
+    handleCloseEditDialog(){      
+      if(!this.is_editSuccessfully){
+        this.is_editSuccessfully = false;
+        this.$confirm("你未保存数据，要放弃本次编辑吗？", "提示", {
+          confirmButtonText: '放弃编辑',
+          cancelButtonText: '再看看'
+        }).then(() => {
+         this.is_editFormVisible = false;          
+        })
+      }else{
+        this.is_editFormVisible = false;
+      }
+      return false;
+    },
+    //
+    handleEditSuccess(){
+      this.is_editSuccessfully = true;
+      this.handleCloseEditDialog();
+      this.getList();
 
+    },
+     /***** 批量编辑 ******/
     //显示批量更新界面
     handleBatchEdit(){
-       this.batcheditFormVisible = true;   
+       this.is_batcheditFormVisible = true;   
     },
     handleEditBathSuccess(){
-      console.log(handleEditBathSuccess);
+      this.getList();
     },
     handleCloseEditBatchDialog(){
-      this.batcheditFormVisible  = false;
+      this.is_batcheditFormVisible  = false;
     },
 
-    //编辑
-    editSubmit: function() {
-      // this.$refs.editForm.validate(valid => {
-      //   if (valid) {
-      //     this.$confirm("确认提交吗？", "提示", {}).then(() => {
-      //       this.editLoading = true;
-      //       //NProgress.start();
-      //     })
-      //   }
-      // });
-    },
+   
    
    
   },
   mounted() {
     console.log('mounted')
+    
 
   },
   created () {
