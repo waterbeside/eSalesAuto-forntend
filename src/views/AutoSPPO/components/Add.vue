@@ -543,7 +543,7 @@ export default {
       this.is_showTips = true
       if(this.tableData[i]){
         console.log('handleCheckAlli:'+i)
-        this.tips =  "正在检查第 "+i+" 条数据";
+        this.tips =  "正在检查第 "+(i+1)+" 条数据";
         let res =  await this.checkTableItem(this.tableData[i],i);
         i++
         window.setTimeout(async ()=>{
@@ -598,56 +598,26 @@ export default {
       sppoAPI.add(postData).then(res=>{
         // console.log(res)
         if(res.code === 0 ){
-          let errorIndex = res.data.errorIndex;
-          let errorStyleNoList = res.data.errorStyleNoList;
-          let successStyleNoList = res.data.successStyleNoList;
-          if(successStyleNoList.length === 0){
-            this.$alert('提交失败', {type:'error',confirmButtonText: 'OK', })
-          }else{
-            let errorMsg = '';
-            if(errorIndex.length > 0 || errorStyleNoList.length > 0){
-              if(errorIndex.length > 0){
-                console.log('errorIndex.length > 0')
-                for(let rowIndex of errorIndex){
-                  this.tableData[rowIndex].check = 0;
-                  this.$set(this.tableData,rowIndex,this.tableData[rowIndex]);
-                }
-                errorMsg = '部份数据提交失败';
-              }
-              if(errorStyleNoList.length > 0){
-                console.log('errorStyleNoList.length')
-                this.tableData.forEach((item,index)=>{
-                  if(errorStyleNoList.includes(item.style_no)){
-                    this.tableData[index].check = 0;
-                    this.tableData[index].uploadSuccess = 0;
-                  }else{
-                    this.tableData[index].uploadSuccess = 1;
-                  }
-                  this.$set(this.tableData,index,this.tableData[index]);
-                })
-                errorMsg = 'Style_No为'+errorStyleNoList.join(',')+'的数据提交失败';
-
-                this.$alert(errorMsg, {type:'error',confirmButtonText: 'OK' })
-              }
-
-            }else{
-                console.log('success')
-                this.$alert('提交成功', {confirmButtonText: 'OK',
-                type:'success',
-                callback:()=>{
-                  this.handleCloseDialog();
-                  this.handleClearTableData();
-                  this.$emit('OK');
-                }})
-
-            }
-          }
+          this.successAction();
+          this.is_submiting = false;
+          return false;
           
             
         }
         this.is_submiting = false;
       }).catch(error=>{
         this.is_submiting = false;
+      })
+    },
+
+    successAction(){
+      this.$alert('提交成功', {confirmButtonText: 'OK',
+        type:'success',
+        callback:()=>{
+          this.handleCloseDialog();
+          this.handleClearTableData();
+          this.$emit('OK');
+        }
       })
     },
 

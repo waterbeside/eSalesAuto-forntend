@@ -74,7 +74,7 @@
 
       <el-table-column   label="操作" width="50" fixed="right"  >
         <div slot-scope="scope" >
-            <el-button @click="handleEditTableItem(scope)" type="primary" size="mini" icon="el-icon-edit" circle></el-button>
+            <el-button @click="handleEditTableItem(scope)" :type="errorIndex.includes(scope.$index) ? 'danger' : 'primary'" size="mini" icon="el-icon-edit" circle></el-button>
         </div>
       </el-table-column>
     </el-table>	
@@ -162,6 +162,7 @@ export default {
       tableData:[],
       editingRow : { },
       editingRow_index : null,
+      errorIndex : [],
       
 
     }
@@ -197,6 +198,7 @@ export default {
         Delivery:null,
         Destination:'',
       };
+      this.errorIndex = [],
       
       
       this.getFactory();
@@ -320,6 +322,10 @@ export default {
                 this.$message.success("编辑成功！");
                 this.is_submiting = false;
             }).catch(error=>{ 
+              if(typeof(error.code)!="undefined" && typeof(error.data.errorData)!="undefined"){
+                  this.errorIndex = error.data.errorData.errorIndex;
+              }
+              console.log(error)
               this.is_submiting = false;
             })
              
