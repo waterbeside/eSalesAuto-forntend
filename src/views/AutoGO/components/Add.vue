@@ -129,7 +129,7 @@ import moment from 'moment'
 import EditExcelItem from './EditExcelItem'
 import { mapGetters } from 'vuex'
 
-import {sppoAPI,assistAPI} from '@/api'
+import {goAPI,assistAPI} from '@/api'
 import { checkColorCombo,checkCollarCuffSize } from '@/utils/validate'
 
 
@@ -557,7 +557,7 @@ export default {
         ...this.formData,
         data
       }
-      sppoAPI.add(postData).then(res=>{
+      goAPI.add(postData).then(res=>{
         // console.log(res)
         if(res.code === 0 ){
           this.successAction();
