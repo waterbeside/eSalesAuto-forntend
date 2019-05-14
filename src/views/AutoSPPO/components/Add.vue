@@ -65,13 +65,15 @@
           :width="fieldItem.width" 
           :min-width="fieldItem.minWidth"
           :fixed="fieldItem.fixed ? fieldItem.fixed : false"  >
-          <div slot-scope="scope" :class="scope.row.error.includes(fieldItem.name) ? 'column-error':''" >
+          <div slot-scope="scope" :class="scope.row.error.includes(fieldItem.name) ? 'column-error':''" :title="fieldItem.label">
             <el-tooltip class="item" effect="dark" placement="top" 
               :content="typeof(errorMsg[scope.$index][fieldItem.name])!='undefined' ? errorMsg[scope.$index][fieldItem.name] : '格式不正确'" 
               v-show="scope.row.error.includes(fieldItem.name) ? true : false">
               <i class="el-icon-warning" />
             </el-tooltip>
-            {{scope.row[fieldItem.name]}}
+             <el-tooltip  effect="dark" placement="top"  :content="typeof(errorMsg[scope.$index][fieldItem.name])!='undefined' ? errorMsg[scope.$index][fieldItem.name] : fieldItem.label" v-show="true">
+              <span>{{scope.row[fieldItem.name]}}</span>
+            </el-tooltip>
           </div>
         </el-table-column>
 
@@ -284,23 +286,35 @@ export default {
      * 取得分厂选择列表
      */
     getFactory(){
-      let cacheList = this.$store.state.cacheData.factorys;
-      if(cacheList && cacheList.length > 0){
-        this.selectBoxData.garment_fty = cacheList;
-        return ;
-      }
-      assistAPI.getFactoryIds().then((res)=>{
-        let list = res.data.list;
-        let factory_selector_list = [];
-        list.forEach(item => {
+      this.$store.dispatch('cacheData/getFactorys', 0).then((res) => {
+          let factory_selector_list = [];
+          res.forEach(item => {
             factory_selector_list.push({
               label:item,
               value:item,
             })
-        });
-        this.selectBoxData.garment_fty = factory_selector_list;
-        this.$store.commit('cacheData/SET_FACTORYS',factory_selector_list);
+          });
+          this.selectBoxData.garment_fty = factory_selector_list;
+      }).catch((error) => {
+        console.log(error)
       })
+      // let cacheList = this.$store.state.cacheData.factorys;
+      // if(cacheList && cacheList.length > 0){
+      //   this.selectBoxData.garment_fty = cacheList;
+      //   return ;
+      // }
+      // assistAPI.getFactoryIds({type:0}).then((res)=>{
+      //   let list = res.data.list;
+      //   let factory_selector_list = [];
+      //   list.forEach(item => {
+      //       factory_selector_list.push({
+      //         label:item,
+      //         value:item,
+      //       })
+      //   });
+      //   this.selectBoxData.garment_fty = factory_selector_list;
+      //   this.$store.commit('cacheData/SET_FACTORYS',factory_selector_list);
+      // })
     },
     /** 
      * 上转表格
@@ -333,22 +347,24 @@ export default {
         })
         return false;
       }
-      results.forEach((value, index, array)=>{
-        value.id = index+1; 
-        value.idx = index; 
-        value.edit = false; //添加‘是否正在编辑’状态，
-        value.check = 1; //查询是否已验证
-        value.error = []; //放入检查不通过的字段名
-        value.uploadSuccess = 0; //用于记录是否上传成功
-        if(typeof(value.remark)=="undefined"){ 
-          value.remark = '';
+
+      tableData = results.map((value, index, array)=>{
+        let newItem = changeCaseJsonKey(Object.assign({},value));
+        newItem.id = index+1; 
+        newItem.idx = index; 
+        newItem.edit = false; //添加‘是否正在编辑’状态，
+        newItem.check = 1; //查询是否已验证
+        newItem.error = []; //放入检查不通过的字段名
+        newItem.uploadSuccess = 0; //用于记录是否上传成功
+        if(typeof(newItem.remark)=="undefined"){ 
+          newItem.remark = '';
         }
-        if(typeof(value.collar_cuff_size)=="undefined"){ 
-          value.collar_cuff_size = '';
+        if(typeof(newItem.collar_cuff_size)=="undefined"){ 
+          newItem.collar_cuff_size = '';
         }
-        tableData.push(changeCaseJsonKey(array[index]));
         this.errorMsg[index] = {}; //用于检查后存放的错误信息
         this.errorRow.push(index); //用于检查是否可按提交按钮
+        return newItem;
       });
       
       for(var i=0;i<header.length;i++){
@@ -658,7 +674,8 @@ export default {
     },
     handleConfirmEdit(row){
       row.check = 1;
-      this.$set(this.tableData,this.editingRow_index,row);
+      let newItem = Object.assign({},this.editingRow,row);
+      this.$set(this.tableData,this.editingRow_index,newItem);
       if(!this.errorRow.includes(this.editingRow_index)){
         this.errorRow.push(this.editingRow_index);
       }
