@@ -1,31 +1,68 @@
 <template>
 	<el-dialog title="更正"  :visible.sync="open"  append-to-body :before-close="handleClose" >
 
-    <el-form label-width="180px" :rules="itemRule" :model="editingRow">
+    <el-form label-width="180px" :rules="itemRule" :model="editingRow" ref="editForm">
+      <el-form-item label="Season"  prop="season">
+        <el-input v-model="editingRow.season"></el-input>
+      </el-form-item>
+
+      <el-form-item label="GMT_FTY" prop="gmt_fty">
+      <el-select v-model="editingRow.gmt_fty" filterable placeholder="gmt_fty">
+          <el-option
+            v-for="item in selectBoxData.gmt_fty"
+            :key="item.value"
+            :label="item.label"
+            :value="item.value"
+            :disabled="item.disabled">
+          </el-option>
+        </el-select>
+      </el-form-item>
+
+      <el-form-item label="OutSource" prop="outsource">
+        <el-radio v-model="editingRow.outsource" label="Y">Y</el-radio>
+        <el-radio v-model="editingRow.outsource" label="N">N</el-radio>
+      </el-form-item>
+      
+      
       <el-form-item label="Style_No" prop="style_no">
         <el-input v-model="editingRow.style_no"></el-input>
       </el-form-item>
 
-      <el-form-item label="Season"  prop="season">
-        <el-input v-model="editingRow.season"></el-input>
+      <el-form-item label="SKU"  prop="sku">
+        <el-input v-model="editingRow.sku"></el-input>
       </el-form-item>
-      <el-form-item label="Garment_Wash"  prop="garment_wash">
-        <el-input v-model="editingRow.garment_wash"></el-input>
+      <el-form-item label="Combo"  prop="combo">
+        <el-input v-model="editingRow.combo"></el-input>
       </el-form-item>
-      <el-form-item label="Garment_Part"  prop="garment_part">
-        <el-input v-model="editingRow.garment_part"></el-input>
+      <el-form-item label="BPO_Date"  prop="bpo_date">
+            <el-date-picker type="date" placeholder="BPO_Date" v-model="editingRow.bpo_date" 
+            format="yyyy-MM-dd"
+            value-format="yyyy-MM-dd"></el-date-picker>
       </el-form-item>
-      <el-form-item label="Color_Combo"  prop="color_combo">
-        <el-input v-model="editingRow.color_combo"></el-input>
+
+      <el-form-item v-for="item in sizeFields" :key="item.name" :label="item.label"  :prop="item.name">
+        <el-input-number v-model="editingRow[item.name]"   :min="0"  label=""></el-input-number>
       </el-form-item>
-      <el-form-item label="Customer_Fab_Code"  prop="customer_fab_code">
-        <el-input v-model="editingRow.customer_fab_code" ></el-input>
+
+      <el-form-item label="Total_Qty"  prop="total_qty">
+        {{total_qty}}
+        <!-- <el-input v-model="editingRow.total_qty" disabled></el-input> -->
       </el-form-item>
-      <el-form-item label="Collar_Cuff_Size"  prop="collar_cuff_size">
-        <el-input v-model="editingRow.collar_cuff_size"></el-input>
+
+      <el-form-item label="Category" prop="category">
+        <el-input v-model="editingRow.category"></el-input>
       </el-form-item>
-        <el-form-item label="Remark" prop="remark">
-        <el-input v-model="editingRow.remark"></el-input>
+
+      <el-form-item label="BPO_NO" prop="bpo_no">
+        <el-input v-model="editingRow.bpo_no"></el-input>
+      </el-form-item>
+
+      <el-form-item label="Warehouse" prop="warehouse">
+        <el-input v-model="editingRow.warehouse"></el-input>
+      </el-form-item>
+
+      <el-form-item label="FDS_No" prop="fds_no">
+        <el-input v-model="editingRow.fds_no"></el-input>
       </el-form-item>
       
     </el-form>
@@ -39,7 +76,11 @@
 </template>
 
 <script>
-// import errGif from '@/assets/401_images/401.gif'
+import { myCache } from '@/utils/common';
+import { checkColorCombo,checkCollarCuffSize } from '@/utils/validate';
+import {sppoAPI,assistAPI} from '@/api';
+import moment from 'moment'
+import { parse } from 'path';
 
 export default {
   props: {
@@ -47,9 +88,28 @@ export default {
     visible:false,
   },
   data() {
+    var validate_Color_Combo = (rule, value, callback) => {
+      checkColorCombo(value,(res)=>{
+        if(res.code === 0){
+          callback();
+        }else{
+          callback(new Error(res.msg));
+        }
+      })
+    };
+    
     return {
       editingRow: this.data,
       open: false,
+      
+      selectBoxData:{
+        gmt_fty: [
+          {
+            value: 'TDC',
+            label: 'TDC'
+          }]
+      },
+      
       itemRule : {
         style_no: [
             { required: true, message: '请输入 Style_No', trigger: 'blur' }
@@ -57,37 +117,70 @@ export default {
         season: [
             { required: true, message: '请输入 Season', trigger: 'blur' }
         ],
-        garment_wash: [
-            { required: true, message: '请输入 Garment_Wash', trigger: 'blur' }
+        sku: [
+            { required: true, message: '请输入 SKU', trigger: 'blur' }
         ],
-        garment_part: [
-            { required: true, message: '请输入 Garment_Part', trigger: 'blur' }
+        
+        combo: [
+            { required: true, message: '请输入 Color_Combo', trigger: 'blur' },
+            { validator: validate_Color_Combo, trigger: 'blur' }
         ],
-        color_combo: [
-            { required: true, message: '请输入 Color_Combo', trigger: 'blur' }
+        category: [
+            { required: true, message: '请输入 Category', trigger: 'blur' }
         ],
-        customer_fab_code: [
-            { required: true, message: '请输入 Customer_Fab_Code', trigger: 'blur' }
+        bpo_no: [
+            { required: true, message: '请输入 BPO_NO', trigger: 'blur' }
         ],
+        warehouse: [
+            { required: true, message: '请输入 Warehouse', trigger: 'blur' }
+        ],
+        fds_no: [
+            { required: true, message: '请输入 FDS_No', trigger: 'blur' }
+        ],
+
+       
+       
       },
       
+      sizeFields:[
+        {name:'xs',label:'XS'},
+        {name:'s',label:'S'},
+        {name:'m',label:'M'},
+        {name:'l',label:'L'},
+        {name:'xl',label:'XL'},
+        {name:'xxl',label:'XXL'},
+        {name:'3xl',label:'3XL'},
+        {name:'4xl',label:'4XL'},
+        {name:'5xl',label:'5XL'},
+        {name:'6xl',label:'6XL'},
+        {name:'7xl',label:'7XL'},
+        {name:'8xl',label:'8XL'},
+      ]
     }
   },
   computed:{
-   
+    total_qty(){
+      let total_qty = 0;
+      this.sizeFields.forEach(el => {
+        if(typeof(this.editingRow[el.name]) != 'undefined'){
+          let valFormat = parseInt(this.editingRow[el.name]);
+          total_qty += valFormat;
+        }
+      });
+      return total_qty;
+    }
   },
   watch: {
-      visible(val) {
-          console.log(val);
-        if (val) {
-          this.open = true;
-          this.$emit('open');
-          if (this.appendToBody) {
-            document.body.appendChild(this.$el);
-          }
-        } else {
-          if (!this.open) this.$emit('close');
-        }
+    visible(val) {
+      if (val) {
+        console.log('open edit');
+
+        this.open = true;
+        this.$emit('open');
+        this.init();
+      } else {
+        if (!this.open) this.$emit('close');
+      }
     },
     data(val) {
       console.log(val);
@@ -97,12 +190,21 @@ export default {
     },
   },
   methods: {
+    init(){
+      if(typeof(this.$refs.editForm)!="undefined"){
+          this.$refs.editForm.resetFields(); 
+      }
+      this.getFactory();
+    },
     handleClose:function(){
       this.open = false;
       this.$emit('update:visible',this.open);
     },
     //关闭对话框
     handleOK(){
+      this.editingRow.pdo_date = moment(this.editingRow.pdo_date).format('YYYY-MM-DD');
+      this.editingRow.total_qty = this.total_qty;
+      console.log(this.editingRow.pdo_date)
       this.$emit('OK',this.editingRow);
       this.handleClose();
     },
@@ -111,13 +213,31 @@ export default {
       this.$emit('cancel',this.editingRow);
       this.handleClose();
     },
+    /** 
+     * 取得分厂选择列表
+     */
+    getFactory(){
+      this.$store.dispatch('cacheData/getFactorys', 1).then((res) => {
+          let factory_selector_list = [];
+          res.forEach(item => {
+            factory_selector_list.push({
+              label:item,
+              value:item,
+            })
+          });
+          this.selectBoxData.gmt_fty = factory_selector_list;
+      }).catch((error) => {
+        console.log(error)
+      })
+    },
   },
   created () {
-
+  },
+  mounted() {
+   
   },
   activated() {
-    console.log(this.visible);
-    console.log(this.visible);
+   
   },
 
 

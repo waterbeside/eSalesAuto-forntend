@@ -22,15 +22,7 @@
           </el-option>
         </el-select>
 
-        <el-select v-model="formData.garment_fty" placeholder="Garment Fty">
-          <el-option
-            v-for="item in selectBoxData.garment_fty"
-            :key="item.value"
-            :label="item.label"
-            :value="item.value"
-            :disabled="item.disabled">
-          </el-option>
-        </el-select>
+       
       </div>
       
 
@@ -57,7 +49,12 @@
       </el-alert>
       
       <!-- table列表 -->
-      <el-table v-loading="is_listLoading" :data="tableData" border style:="width: 100%" v-show="is_hasUploadExcel"  @sort-change="sortChange">
+      <el-table v-loading="is_listLoading" 
+        :data="tableData" 
+        style:="width: 100%" 
+        v-show="is_hasUploadExcel"  
+        @sort-change="sortChange"
+        border stripe >
         <el-table-column v-for="fieldItem of tableFields" 
           :key="fieldItem.name" 
           :prop="fieldItem.name" 
@@ -65,13 +62,16 @@
           :width="fieldItem.width" 
           :min-width="fieldItem.minWidth"
           :fixed="fieldItem.fixed ? fieldItem.fixed : false"  >
-          <div slot-scope="scope" :class="scope.row.error.includes(fieldItem.name) ? 'column-error':''" >
-            <el-tooltip class="item" effect="dark" placement="top" 
+          <div slot-scope="scope" :class="scope.row.error.includes(fieldItem.name) ? 'column-error':''" :title="fieldItem.label" >
+            <el-tooltip   effect="dark" placement="top" 
               :content="typeof(errorMsg[scope.$index][fieldItem.name])!='undefined' ? errorMsg[scope.$index][fieldItem.name] : '格式不正确'" 
               v-show="scope.row.error.includes(fieldItem.name) ? true : false">
               <i class="el-icon-warning" />
             </el-tooltip>
-            {{scope.row[fieldItem.name]}}
+            <el-tooltip  effect="dark" placement="top"  :content="typeof(errorMsg[scope.$index][fieldItem.name])!='undefined' ? errorMsg[scope.$index][fieldItem.name] : fieldItem.label" v-show="true">
+              <span>{{scope.row[fieldItem.name] ? scope.row[fieldItem.name] : '&nbsp;&nbsp;'}}</span>
+            </el-tooltip>
+
           </div>
         </el-table-column>
 
@@ -91,6 +91,9 @@
                 :icon="checkBtnIcon[scope.row.check] ? checkBtnIcon[scope.row.check] : ''" >
                 检验
               </el-button>
+             
+
+
             </template>
             
           </div>
@@ -121,7 +124,7 @@
 <script>
 const _ = require('lodash');
 import UploadExcelComponent from '@/components/UploadExcel/index.vue'
-import {changeCaseJsonKey,asyncForEach,myCache} from '@/utils/common'
+import {changeCaseJsonKey,myCache,formatDateFromExcel} from '@/utils/common'
 import moment from 'moment'
 import EditExcelItem from './EditExcelItem'
 import { mapGetters } from 'vuex'
@@ -153,15 +156,32 @@ export default {
       is_showTips: false,
       tips:'',
       tableFields : [
-        {name:'style_no',label:'Style_No',width:120,fixed:true},
-        {name:'season',label:'Season',width:120},
-        {name:'garment_wash',label:'Garment_Wash',width:140},
-        {name:'garment_part',label:'Garment_Part',width:140},
-        {name:'color_combo',label:'Color_Combo',minWidth:150},
-        {name:'customer_fab_code',label:'Customer_Fab_Code',width:170},
-        {name:'collar_cuff_size',label:'Collar_Cuff_Size',width:140},
-        {name:'remark',label:'Remark',width:140}
+        {name:'season',label:'Season',width:90},
+        {name:'gmt_fty',label:'GMT_FTY',width:100},
+        {name:'outsource',label:'OutSource',width:110},
+        {name:'style_no',label:'Style_No',width:110},
+        {name:'sku',label:'SKU',width:140},
+        {name:'combo',label:'Combo',minWidth:150},
+        {name:'bpo_date',label:'BPO_Date',width:100},
+        {name:'xs',label:'XS',width:60},
+        {name:'s',label:'S',width:60},
+        {name:'m',label:'M',width:60},
+        {name:'l',label:'L',width:60},
+        {name:'xl',label:'XL',width:60},
+        {name:'xxl',label:'XXL',width:60},
+        {name:'3xl',label:'3XL',width:60},
+        {name:'4xl',label:'4Xl',width:60},
+        {name:'5xl',label:'5Xl',width:60},
+        {name:'6xl',label:'6XL',width:60},
+        {name:'7xl',label:'7XL',width:60},
+        {name:'8xl',label:'8XL',width:60},
+        {name:'total_qty',label:'Total_Qty',width:100},
+        {name:'category',label:'Category',width:130},
+        {name:'bpo_no',label:'BPO_NO',width:120},
+        {name:'warehouse',label:'Warehouse',width:100},
+        {name:'fds_no',label:'FDS_No',width:120},
       ],
+      sizeFields:['xs','s','m','l','xl','xxl','3xl','4xl','5xl','6xl','7xl','8xl'],
       uploadExcelTime : '',
       
       checkBtnStyle:['danger','default','default','success'],
@@ -173,17 +193,11 @@ export default {
       formData:{
         customer_code:'',
         brand:'',
-        garment_fty:'',
       },
       // customer_code: [],
       selectBoxData:{
         customer_code:[],
         brand: [],
-        garment_fty: [
-          {
-            value: 'TDC',
-            label: 'TDC'
-          }]
       },
       // tableData_o: null,
       tableData: null,
@@ -284,24 +298,20 @@ export default {
      * 取得分厂选择列表
      */
     getFactory(){
-      let cacheList = this.$store.state.cacheData.factorys;
-      if(cacheList && cacheList.length > 0){
-        this.selectBoxData.garment_fty = cacheList;
-        return ;
-      }
-      assistAPI.getFactoryIds().then((res)=>{
-        let list = res.data.list;
-        let factory_selector_list = [];
-        list.forEach(item => {
+      this.$store.dispatch('cacheData/getFactorys', 1).then((res) => {
+          let factory_selector_list = [];
+          res.forEach(item => {
             factory_selector_list.push({
               label:item,
               value:item,
             })
-        });
-        this.selectBoxData.garment_fty = factory_selector_list;
-        this.$store.commit('cacheData/SET_FACTORYS',factory_selector_list);
+          });
+          this.selectBoxData.garment_fty = factory_selector_list;
+      }).catch((error) => {
+        console.log(error)
       })
     },
+    
     /** 
      * 上转表格
      */
@@ -325,6 +335,8 @@ export default {
     handleSuccess({ results, header ,error }) {
       let tableData = [];
       let tableHeader = [];
+      let hasError = 0;
+      
       if(error){
         console.log(error.message)
         this.$message({
@@ -333,36 +345,40 @@ export default {
         })
         return false;
       }
-      results.forEach((value, index, array)=>{
-        value.id = index+1; 
-        value.idx = index; 
-        value.edit = false; //添加‘是否正在编辑’状态，
-        value.check = 1; //查询是否已验证
-        value.error = []; //放入检查不通过的字段名
-        value.uploadSuccess = 0; //用于记录是否上传成功
-        if(typeof(value.remark)=="undefined"){ 
-          value.remark = '';
-        }
-        if(typeof(value.collar_cuff_size)=="undefined"){ 
-          value.collar_cuff_size = '';
-        }
-        tableData.push(changeCaseJsonKey(array[index]));
+
+      tableData = results.map((value, index, array)=>{
+        let newItem = changeCaseJsonKey(Object.assign({},value));
+        newItem.id = index+1; 
+        newItem.idx = index; 
+        newItem.edit = false; //添加‘是否正在编辑’状态，
+        newItem.check = 1; //查询是否已验证
+        newItem.error = []; //放入检查不通过的字段名
+        newItem.uploadSuccess = 0; //用于记录是否上传成功
+        newItem.bpo_date = formatDateFromExcel(newItem.bpo_date);
         this.errorMsg[index] = {}; //用于检查后存放的错误信息
         this.errorRow.push(index); //用于检查是否可按提交按钮
+        return newItem;
       });
       
       for(var i=0;i<header.length;i++){
         tableHeader.push(header[i].toLowerCase());
       }
-      console.log(tableData);
-      if(!tableHeader.includes("season") || !tableHeader.includes('style_no') || !tableHeader.includes('garment_wash') ){
+      console.log(tableHeader);
+      let checkEmptyField = ["season","style_no","gmt_fty","outsource"];
+      for(let i in checkEmptyField){
+        if(!tableHeader.includes(checkEmptyField[i])){
+          hasError = 1;
+          break;
+        }
+      }
+      if(hasError){
         this.$message({
           message: '你上我传的表格似乎不太符合规范格式，请检查后重新上传',
           type: 'warning'
         })
         return false;
       }
-      
+    
       // this.tableData_o = [...tableData]
       this.tableData = tableData;
       this.tableHeader = tableHeader
@@ -378,28 +394,23 @@ export default {
         // console.log(Season)
         let hasError = false;
         let errorMsg = this.errorMsg;
-        errorMsg[index] = {}
-        this.checkingRow.add(index);
-        console.log('this.checkingRow');
-        console.log(this.checkingRow);
-        if(!this.errorRow.includes(index)){
-         this.errorRow.push(index);
-        }
-
-        const checkEmptyField = [
-          'style_no','season','garment_wash','garment_part','color_combo','customer_fab_code'
-        ];
-        let garment_wash = _.trim(row.garment_wash);
-        let garment_part = _.trim(row.garment_part);
-        let color_combo = _.trim(row.color_combo);
-        let customer_fab_code = _.trim(row.customer_fab_code);
-        let collar_cuff_size = _.trim(row.collar_cuff_size);
-        
         row.check = 2; //状态进行中
         this.$set(this.tableData,index,row);
         row.error = [];
 
+        errorMsg[index] = {}
+        this.checkingRow.add(index);
 
+        if(!this.errorRow.includes(index)){
+         this.errorRow.push(index);
+        }
+
+        
+
+        //验证不能为空的字段
+        const checkEmptyField = [
+          'season','gmt_fty','outsource','style_no','sku','combo','category','bpo_no','warehouse','fds_no'
+        ];
         checkEmptyField.forEach((item)=>{
           if( _.trim(row[item]) == ''){
             row.error.push(item);
@@ -407,99 +418,54 @@ export default {
             hasError = true;
           }
         })
-        //color_combo 第三位必须为空格
         
-        if(color_combo != ''  ){
-          checkColorCombo(color_combo,(res)=>{
+        //验证必须为整数的字段
+        const checkIntegerField = [
+          'xs','s','m','l','xl','xxl','3xl','4xl','5xl','6xl','7xl','8xl','total_qty',
+        ];
+        let total_qty = 0;
+        this.sizeFields.forEach(item=>{
+          let valueFormat =  _.toInteger(row[item]);
+          total_qty += valueFormat;
+          if(_.trim(row[item])!='' && _.toInteger(row[item]) != row[item] ){
+            row.error.push(item);
+            errorMsg[index][item] = "'"+item+"'必须为整数";
+            hasError = true;
+          }
+          
+        })
+        row.total_qty = total_qty;
+        // this.$set(this.tableData,index,row);
+
+
+        let combo = _.trim(row.combo);
+        //color_combo 第三位必须为空格
+        if(combo != ''  ){
+          checkColorCombo(combo,(res)=>{
             if(res.code !== 0){
-              errorMsg[index].color_combo = res.msg;
-              row.error.push('color_combo');
+              errorMsg[index].combo = res.msg;
+              row.error.push('combo');
               hasError = true;
             }
           })
         }
 
-        //Customer_Fab_Code 相同Style_No, 相同Garment_Part, 只可以出现一个
-        if(customer_fab_code != ''){
-          let otherdRowIndex = this.tableData.findIndex(item=>{
-            return (_.trim(item.style_no) == _.trim(row.style_no) && _.trim(item.garment_part) == _.trim(garment_part) && _.trim(item.customer_fab_code) != customer_fab_code &&  item.id != row.id);
-          })
-          if(otherdRowIndex != -1){
-            errorMsg[index].customer_fab_code = "相同Style_No, 相同Garment_Part, 只可以出现一个Customer_Fab_Code";
-            if(typeof(errorMsg[otherdRowIndex])=="undefined"){
-              errorMsg[otherdRowIndex] = {};
-            }
-            errorMsg[otherdRowIndex].customer_fab_code = "相同Style_No, 相同Garment_Part, 只可以出现一个Customer_Fab_Code";
-            row.error.push('customer_fab_code');
-            hasError = true;
-            let otherErrorRow = this.tableData[otherdRowIndex];
-            otherErrorRow.error.push('customer_fab_code');
-            this.$set(this.tableData,otherdRowIndex,otherErrorRow);
-          }
-          try {
-            let checkFabCodeRes = await myCache.do('checkCustomerFabCodeExist:'+customer_fab_code,[assistAPI.checkCustomerFabCodeExist,{customer_fab_code}],600);
-
-            if(checkFabCodeRes < 1){
-              row.error.push('customer_fab_code');
-              errorMsg[index]['customer_fab_code'] = "'customer_fab_code'不正确";
-              hasError = true;
-            }
-          } catch (error) { 
-            console.log(error);
-            if(hasError){
-              row.check = 0; //状态为不合格
-            }else{ 
-              row.check = 1;
-            }
-            this.$set(this.tableData,index,row);
-            this.checkingRow.delete(index);
-            return false;
-          }
+        if(!['y','n'].includes(_.trim(row.outsource).toLowerCase())){
+          errorMsg[index].outsource = 'OutSource 必须为Y或者N';
+          row.error.push('outsource');
+          hasError = true;
         }
-
-        //Collar_Cuff_Size 格式必须为【数字 * 数字】,比如39.5 * 5，并且Garment_Part是O或者F的时候必须要有值.否则红色标识出来.
-        if(garment_part!='' && ['F','O','f','o'].includes(garment_part)){
-          if( collar_cuff_size == ''){ //如果为空
-            row.error.push('collar_cuff_size');
-            errorMsg[index]['collar_cuff_size'] = "当Garment_Part是O或F时'collar_cuff_size'不能为空";
-            hasError = true;
-          }else{ 
-            if(!checkCollarCuffSize(collar_cuff_size)){
-              row.error.push('collar_cuff_size');
-              errorMsg[index]['collar_cuff_size'] = "'collar_cuff_size'格式必须为:数字*数字";
-              hasError = true;
-            }
-          }
-        }
-
-
-        // Garment_Wash 判断ESCM的数据库有无此洗水
-        try {
-          let checkWashTypeRes = await myCache.do('checkWashTypeExist:'+garment_wash,[assistAPI.checkWashTypeExist,{garment_wash}],600);
-          if(checkWashTypeRes < 1){
-            row.error.push('garment_wash');
-            errorMsg[index]['garment_wash'] = "'garment_wash'不正确";
-            hasError = true;
-          }
-        } catch (error) { 
-          if(hasError){
-            row.check = 0; //状态为不合格
-          }else{ 
-            row.check = 1;
-          }
-          this.$set(this.tableData,index,row);
-          this.checkingRow.delete(index);
-          return false;
-        }
-
+       
+        //验证GMT_FTY;
         try{
-          let checkPartRes = await myCache.do('checkGarmentPartExist:'+garment_part,[assistAPI.checkFabricTypeExist,{garment_part}],600);
-          if(checkPartRes < 1){
-            row.error.push('garment_part');
-            errorMsg[index]['garment_part'] = "'garment_part'不正确";
+          let factorysList = await this.$store.dispatch('cacheData/getFactorys', 1)
+          if(!factorysList.includes(row.gmt_fty)){
+            row.error.push('gmt_fty');
+            errorMsg[index]['gmt_fty'] = "'GMT_FTY;'不正确";
             hasError = true;
           }
-        } catch (error){
+        }catch(error){
+          console.log(error);
           if(hasError){
             row.check = 0; //状态为不合格
           }else{ 
@@ -509,7 +475,8 @@ export default {
           this.checkingRow.delete(index);
           return false;
         }
-      
+
+        // console.log(row.error);
         
         if(hasError){
           row.check = 0; //状态为不合格
@@ -522,7 +489,6 @@ export default {
           this.$set(this.tableData,index,row);
           this.checkingRow.delete(index);
           return  hasError ? false : true
-
         },300)
         
         
@@ -548,7 +514,7 @@ export default {
         i++
         window.setTimeout(async ()=>{
           await this.handleCheckAll(i);
-        },300)
+        },100)
         return true
       }else{
         this.tips =  "检查完成!";
@@ -580,11 +546,7 @@ export default {
         this.is_submiting = false;
         return false;
       }
-      if(this.formData.garment_fty == ""){
-        this.$message.error("请选择'Garment Fty'");
-        this.is_submiting = false;
-        return false;
-      }
+   
       let data = [];
       this.tableData.forEach((item,index)=>{
         if(item.uploadSuccess !== 1){
@@ -601,45 +563,6 @@ export default {
           this.successAction();
           this.is_submiting = false;
           return false;
-          
-          // let errorIndex = res.data.errorIndex;
-          // let errorStyleNoList = res.data.errorStyleNoList;
-          // let successStyleNoList = res.data.successStyleNoList;
-          // if(successStyleNoList.length === 0){
-          //   this.$alert('提交失败', {type:'error',confirmButtonText: 'OK', })
-          // }else{
-          //   let errorMsg = '';
-          //   if(errorIndex.length > 0 || errorStyleNoList.length > 0){
-          //     if(errorIndex.length > 0){
-          //       console.log('errorIndex.length > 0')
-          //       for(let rowIndex of errorIndex){
-          //         this.tableData[rowIndex].check = 0;
-          //         this.$set(this.tableData,rowIndex,this.tableData[rowIndex]);
-          //       }
-          //       errorMsg = '部份数据提交失败';
-          //     }
-          //     if(errorStyleNoList.length > 0){
-          //       console.log('errorStyleNoList.length')
-          //       this.tableData.forEach((item,index)=>{
-          //         if(errorStyleNoList.includes(item.style_no)){
-          //           this.tableData[index].check = 0;
-          //           this.tableData[index].uploadSuccess = 0;
-          //         }else{
-          //           this.tableData[index].uploadSuccess = 1;
-          //         }
-          //         this.$set(this.tableData,index,this.tableData[index]);
-          //       })
-          //       errorMsg = 'Style_No为'+errorStyleNoList.join(',')+'的数据提交失败';
-
-          //       this.$alert(errorMsg, {type:'error',confirmButtonText: 'OK' })
-          //     }
-
-          //   }else{
-          //      this.successAction()
-          //   }
-          // }
-          
-            
         }
         this.is_submiting = false;
       }).catch(error=>{
@@ -695,7 +618,8 @@ export default {
     },
     handleConfirmEdit(row){
       row.check = 1;
-      this.$set(this.tableData,this.editingRow_index,row);
+      let newItem = Object.assign({},this.editingRow,row);
+      this.$set(this.tableData,this.editingRow_index,newItem);
       if(!this.errorRow.includes(this.editingRow_index)){
         this.errorRow.push(this.editingRow_index);
       }

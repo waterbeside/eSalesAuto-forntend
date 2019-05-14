@@ -3,8 +3,8 @@
     <!--工具条-->
     <el-col :span="24" class="toolbar" style="padding-bottom: 0px;">
       <el-form :inline="true" :model="filters">
-        <el-form-item label="PPO_NO">
-          <el-input placeholder="PPO_NO" v-model="filters.ppo_no"></el-input>
+        <el-form-item label="GO_NO">
+          <el-input placeholder="GO_NO" v-model="filters.ppo_no"></el-input>
         </el-form-item>
         <el-form-item label="Season">
           <el-input  placeholder="Season" v-model="filters.season"></el-input>
@@ -38,16 +38,16 @@
     v-if="!is_refresh"
     style:="width: 100%">
 		  <el-table-column type="selection" width="50" fixed></el-table-column>
-      <el-table-column prop="PPO_NO" label="PPO_NO" min-width="150">
+      <el-table-column prop="GO_NO" label="GO_NO" min-width="150">
          <div slot-scope="scope"  >
-            <a :href="'http://192.168.7.211/ReportServer/Pages/ReportViewer.aspx?%2fGEK%2fSales%2fSales+F01%2fSPPOReportFile%2fSPPOReport&ppo_no='+scope.row['PPO_NO']" target="_blank">{{scope.row['PPO_NO']}}</a>
+            <a :href="'http://192.168.7.211/ReportServer/Pages/ReportViewer.aspx?%2fGEK%2fSales%2fSales+F01%2fGOReportFile%2fGOReport&go_no='+scope.row['GO_NO']" target="_blank">{{scope.row['GO_NO']}}</a>
           </div>
         
       </el-table-column>
       <el-table-column prop="Creater" label="Creater" width="120"></el-table-column>
 	    <el-table-column prop="Season" label="Season" width="100"></el-table-column>
       <el-table-column prop="Style_No" label="Style_No"  width="120"></el-table-column>
-		  <el-table-column prop="Garment_Wash" label="Garment_Wash" width="160"></el-table-column>
+		  <el-table-column prop="FDS_NO" label="FDS_NO" width="160"></el-table-column>
 		  <el-table-column prop="Create_Time" label="创建时间" width="140"></el-table-column>
       <el-table-column  label="操作"  width='100px' fixed="right">
         <template scope="scope">
@@ -79,7 +79,7 @@
     </el-dialog>
 
     <!--新增界面-->
-		<el-dialog title="添加SPPO"  :visible.sync="is_addFormVisible"  width="80%" :before-close="handleBeforeCloseAddDialog" :close-on-click-modal="false" >
+		<el-dialog title="添加GO"  :visible.sync="is_addFormVisible"  width="80%" :before-close="handleBeforeCloseAddDialog" :close-on-click-modal="false" >
       <add-view ref="myAddBox" @OK="handleAddSuccess"  @close="handleCloseAddDialog" />
     </el-dialog>
 
@@ -87,7 +87,7 @@
     <el-dialog title="批量编辑" :visible.sync="is_batcheditFormVisible" width="500" :close-on-click-modal="false" >
       <edit-batch-view ref="myBathEditBox" @OK="handleEditBathSuccess"  @close="handleCloseEditBatchDialog" :data="multipleSelection" />
     </el-dialog>
-      <router-view > </router-view>
+    <router-view > </router-view>
 
   </div>
 
@@ -97,13 +97,13 @@
 // import util from "../../common/js/util";
 import moment from 'moment'
 import NProgress from 'nprogress'
-import {sppoAPI} from '@/api'
+import {goAPI} from '@/api'
 import AddView from './components/Add'
 import EditView from './components/Edit'
 import EditBatchView from './components/EditBatch'
 
 export default {
-  name: 'autoSppo',
+  name: 'autoGo',
   components: { AddView ,EditBatchView, EditView},
 
   data() {
@@ -209,7 +209,6 @@ export default {
     },
     //获取列表内容
     getList() {
-      console.log(sppoAPI.getList);
       let param = {
         page: this.page,
         ppo_no: this.filters.ppo_no,
@@ -222,10 +221,9 @@ export default {
       if(this.listLoading){
         return false;
       }
-      // console.log(sppoGetList);return;
       this.listLoading = true;
       NProgress.start();
-      sppoAPI.getList(param).then(res=>{
+      goAPI.getList(param).then(res=>{
         let data = res.data;
         this.listData = data.list.map((item,index)=>{
           item.Create_Time = moment(item.Create_Time).format('YYYY-MM-DD HH:mm');
@@ -256,7 +254,7 @@ export default {
         this.listLoading = true;
         //NProgress.start();
         let datas = { id: row.ID };
-        sppoAPI.del(datas).then(res => {
+        goAPI.del(datas).then(res => {
           this.listLoading = false;
           //NProgress.done();
           this.$message({
@@ -280,7 +278,7 @@ export default {
         this.listLoading = true;
         //NProgress.start();
         let datas = { id: ids };
-        sppoAPI.del(datas).then(res => {
+        goAPI.del(datas).then(res => {
           this.listLoading = false;
           //NProgress.done();
           this.$message({
