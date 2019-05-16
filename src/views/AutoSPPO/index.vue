@@ -217,8 +217,8 @@ export default {
       };
       //处理时间
       let date_range = this.filters.date_range;
-      param.date_start = typeof(date_range[0])!="undefined" && date_range[0] ? moment(date_range[0]).valueOf() : 0 ;
-      param.date_end = typeof(date_range[1])!="undefined" && date_range[1] ? moment(date_range[1]).valueOf() : 0 ;
+      param.date_start = date_range && typeof(date_range[0])!="undefined" && date_range[0] ? moment(date_range[0]).valueOf() : 0 ;
+      param.date_end   = date_range && typeof(date_range[1])!="undefined" && date_range[1] ? moment(date_range[1]).valueOf() : 0 ;
       if(this.listLoading){
         return false;
       }
