@@ -36,6 +36,7 @@
     v-loading="listLoading"
     @selection-change="handleSelectionChange"
     v-if="!is_refresh"
+     stripe
     style:="width: 100%">
 		  <el-table-column type="selection" width="50" fixed></el-table-column>
       <el-table-column prop="GO_NO" label="GO_NO" min-width="150">
@@ -47,7 +48,8 @@
       <el-table-column prop="Creater" label="Creater" width="120"></el-table-column>
 	    <el-table-column prop="Season" label="Season" width="100"></el-table-column>
       <el-table-column prop="Style_No" label="Style_No"  width="120"></el-table-column>
-		  <el-table-column prop="FDS_NO" label="FDS_NO" width="160"></el-table-column>
+		  <el-table-column prop="FDS_No" label="FDS_NO" width="120"></el-table-column>
+		  <el-table-column prop="Factory" label="Factory" width="80"></el-table-column>
 		  <el-table-column prop="Create_Time" label="创建时间" width="140"></el-table-column>
       <el-table-column  label="操作"  width='100px' fixed="right">
         <template scope="scope">
