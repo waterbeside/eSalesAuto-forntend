@@ -3,17 +3,17 @@
   <el-form  label-width="180px" :model="formData" :rules="rules"  ref="editForm" >
 
     <el-alert title="提示"  type="warning" :closable="false" show-icon style="margin-bottom:20px;"> 
-        你正在批量修改 PPO_No 为 <b>{{ppo_no_string}}</b> 的数据。
+        你正在批量修改 GO_NO 为 <b>{{go_no_string}}</b> 的数据。
     </el-alert>
     
     <el-form-item label="Season"  prop="season" >
       <el-input placeholder="Season" v-model="formData.season"></el-input>
     </el-form-item>
     
-    <el-form-item label="Garment_Wash" prop="garment_wash">
-      <el-select v-model="formData.garment_wash" filterable placeholder="Garment_Wash">
+    <el-form-item label="GMT_FTY" prop="gmt_fty">
+      <el-select v-model="formData.gmt_fty" filterable placeholder="GMT_FTY">
         <el-option
-          v-for="item in selectBoxData.garment_wash"
+          v-for="item in selectBoxData.gmt_fty"
           :key="item.value"
           :label="item.label"
           :value="item.value"
@@ -22,22 +22,11 @@
       </el-select>
     </el-form-item>
 
-
-    
-    <el-form-item label="Delivery" prop="delivery" >
-        <el-date-picker type="date" placeholder="交期" v-model="formData.delivery"></el-date-picker>
-    </el-form-item>
-
-    <el-form-item label="Destination" prop="destination">
-       <el-select v-model="formData.destination" filterable placeholder="Destination">
-          <el-option
-            v-for="item in selectBoxData.destination"
-            :key="item.value"
-            :label="item.label"
-            :value="item.value"
-            :disabled="item.disabled">
-          </el-option>
-        </el-select>
+  
+   
+    <el-form-item label="OutSource" prop="outsource">
+      <el-radio v-model="formData.outsource" label="Y" >Y</el-radio>
+      <el-radio v-model="formData.outsource" label="N" >N</el-radio>
     </el-form-item>
   </el-form>
 
@@ -53,7 +42,7 @@
 
 <script>
 
-import {sppoAPI,assistAPI} from '@/api'
+import {goAPI,assistAPI} from '@/api'
 
 export default {
   props: {
@@ -65,29 +54,24 @@ export default {
       dataList:this.data,
       formData:{
         season:'',
-        garment_wash:'',
-        delivery:null,
-        destination:'',
+        gmt_fty:'',
+        outsource:'N',
       },
       is_submiting:false,
       selectBoxData:{
-        garment_wash:[],
-        destination:[]
+        gmt_fty:[],
       },
-      ppo_no_string:'',
-      ppo_no_array:'',
+      go_no_string:'',
+      go_no_array:'',
       rules : {
         season: [
             { required: true, message: '请输入 Season', trigger: 'blur' }
         ],
-        garment_wash: [
-            { required: true, message: '请选择 Garment_Wash', trigger: 'change' }
+        gmt_fty: [
+            { required: true, message: '请选择 GMT_FTY', trigger: 'change' }
         ],
-        delivery: [
-            { required: true, message: '请选择日期', trigger: 'blur' }
-        ],
-        destination: [
-            { required: true, message: '请选择 destination', trigger: 'change' }
+        outsource: [
+            { required: true, message: '请选择 OutSource', trigger: 'change' }
         ],
         
       },
@@ -119,65 +103,40 @@ export default {
     
       this.formData={
         season:'',
-        garment_wash:'',
-        delivery:null,
-        destination:'',
+        gmt_fty:'',
+        outsource:'N',
       };
       this.getFactory();
-      this.getWashTypes();
-      console.log(this.dataList);
-      this.ppo_no_array = this.dataList.map(item => item.PPO_NO);
-      this.ppo_no_string = this.ppo_no_array.join('、');
-      this.$refs['editForm'].resetFields();
+
+      this.go_no_array = this.dataList.map(item => item.GO_NO);
+      this.go_no_string = this.go_no_array.join('、');
+
+      if(typeof(this.$refs.editForm)!="undefined"){
+          this.$refs.editForm.resetFields(); 
+      }
+ 
  
     },
 
-    /** 
+     /** 
      * 取得分厂选择列表
      */
     getFactory(){
-      let cacheList = this.$store.state.cacheData.factorys;
-      if(cacheList && cacheList.length > 0){
-        this.selectBoxData.destination = cacheList;
-        return ;
-      }
-      assistAPI.getFactoryIds().then((res)=>{
-        let list = res.data.list;
-        let factory_selector_list = [];
-        list.forEach(item => {
+      this.$store.dispatch('cacheData/getFactorys', 1).then((res) => {
+          let factory_selector_list = [];
+          res.forEach(item => {
             factory_selector_list.push({
               label:item,
               value:item,
             })
-        });
-        this.selectBoxData.destination = factory_selector_list;
-        this.$store.commit('cacheData/SET_FACTORYS',factory_selector_list);
+          });
+          this.selectBoxData.gmt_fty = factory_selector_list;
+      }).catch((error) => {
+        console.log(error)
       })
     },
 
-     /** 
-     * 取得garment_wash
-     */
-    getWashTypes(){
-      let cacheList = this.$store.state.cacheData.washTypes;
-      if(cacheList && cacheList.length > 0){
-        this.selectBoxData.garment_wash = cacheList;
-        return ;
-      }
-      assistAPI.getWashTypes().then((res)=>{
-        let list = res.data.list;
-        let washTypes_selector_list = [];
-        list.forEach(item => {
-            washTypes_selector_list.push({
-              label:item,
-              value:item,
-            })
-        });
-        this.selectBoxData.garment_wash = washTypes_selector_list;
-        this.$store.commit('cacheData/SET_WASH_TYPES',washTypes_selector_list);
-      })
-    },
-
+    
     //OK
     handleOK(){
       this.$refs['editForm'].validate((valid) => {
@@ -190,10 +149,10 @@ export default {
             this.is_submiting = true;
             let data = {
               ...this.formData,
-              ppo_nos:this.ppo_no_array,
+              go_nos:this.go_no_array,
             }
             //提交到API
-            sppoAPI.batchEdit(data).then(res=>{
+            goAPI.batchEdit(data).then(res=>{
                 console.log(res);
                 if(res.code===0){
                   this.$emit('OK',this.formData);
