@@ -77,7 +77,7 @@
           </div>
         </el-table-column>
 
-        <el-table-column   label="操作" width="160" fixed="right"  >
+        <el-table-column   label="操作" width="170" fixed="right"  >
           <div slot-scope="scope" >
             <template v-if="scope.$index === editingRow_index">
               正在编辑...
@@ -87,12 +87,22 @@
             </template>
             <template v-else>
               <el-button @click="handleEditTableItem(scope)" type="primary" size="mini" icon="el-icon-edit"></el-button>
-              <el-button @click="checkTableItem(scope.row,scope.$index)" size="mini" plain 
-                :type="checkBtnStyle[scope.row.check] ? checkBtnStyle[scope.row.check] : 'default'" 
-                :loading="scope.row.check === 2 || checkingRow.has(scope.$index)" 
-                :icon="checkBtnIcon[scope.row.check] ? checkBtnIcon[scope.row.check] : ''" >
-                检验
-              </el-button>
+              <template v-if="checkingRow.has(scope.$index)">
+                <el-button  :disabled="true" size="mini" plain 
+                  :type="checkBtnStyle[2] ? checkBtnStyle[2] : 'default'" 
+                  :loading="true" 
+                  :icon="checkBtnIcon[2] ? checkBtnIcon[2] : ''" >
+                  检验
+                </el-button>
+              </template>
+              <template v-else>
+                <el-button @click="checkTableItem(scope.row,scope.$index)" size="mini" plain 
+                  :type="checkBtnStyle[scope.row.check] ? checkBtnStyle[scope.row.check] : 'default'" 
+                  :loading="scope.row.check === 2 || checkingRow.has(scope.$index)" 
+                  :icon="checkBtnIcon[scope.row.check] ? checkBtnIcon[scope.row.check] : ''" >
+                  检验
+                </el-button>
+              </template>
             </template>
             
           </div>
@@ -412,7 +422,7 @@ export default {
         let collar_cuff_size = _.trim(row.collar_cuff_size);
         
         row.check = 2; //状态进行中
-        this.$set(this.tableData,index,row);
+        // this.$set(this.tableData,index,row);
         row.error = [];
 
 
@@ -564,7 +574,7 @@ export default {
         i++
         window.setTimeout(async ()=>{
           await this.handleCheckAll(i);
-        },300)
+        },80)
         return true
       }else{
         this.tips =  "检查完成!";
