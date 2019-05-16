@@ -132,29 +132,26 @@ export default {
  
     },
 
+
     /** 
      * 取得分厂选择列表
      */
     getFactory(){
-      let cacheList = this.$store.state.cacheData.factorys;
-      if(cacheList && cacheList.length > 0){
-        this.selectBoxData.destination = cacheList;
-        return ;
-      }
-      assistAPI.getFactoryIds().then((res)=>{
-        let list = res.data.list;
-        let factory_selector_list = [];
-        list.forEach(item => {
+      this.$store.dispatch('cacheData/getFactorys', 0).then((res) => {
+          let factory_selector_list = [];
+          res.forEach(item => {
             factory_selector_list.push({
               label:item,
               value:item,
             })
-        });
-        this.selectBoxData.destination = factory_selector_list;
-        this.$store.commit('cacheData/SET_FACTORYS',factory_selector_list);
+          });
+          this.selectBoxData.destination = factory_selector_list;
+      }).catch((error) => {
+        console.log(error)
       })
     },
 
+   
      /** 
      * 取得garment_wash
      */
