@@ -72,6 +72,7 @@
 
     .svg-icon {
       margin-right: 16px;
+      // fill:#ffffff;
     }
 
     .el-menu {
@@ -96,6 +97,7 @@
     & .el-submenu .el-menu-item {
       min-width: $sideBarWidth !important;
       background-color: $subMenuBg !important;
+      padding-left: 20px !important; 
 
       &:hover {
         background-color: $subMenuHover !important;
@@ -131,6 +133,7 @@
 
     .el-submenu {
       overflow: hidden;
+      background: red;
 
       &>.el-submenu__title {
         padding: 0 !important;
