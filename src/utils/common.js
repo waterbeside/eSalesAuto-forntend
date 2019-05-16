@@ -79,7 +79,6 @@ export let myCache = {
     if(!storageObj){
       return null;
     }
-    
     let now = (new Date()).valueOf();
     let setData = {
       exp:exp === 0 ? 0 : exp*1000 + now,
@@ -90,17 +89,24 @@ export let myCache = {
     return;
   },
 
-  do:async(key,[fun,data=null],exp=0)=>{
+  do:async(key,[fun,data=null,type="res"],exp=0)=>{
     let res = myCache.get(key,exp);
     if(res === null){
       if(typeof(fun)=='function'){
         res = await fun(data);
+        let setData = res ;
+        if(type != 'res'){
+           let type_arr = res.split('.');
+           for(let i in type_arr){
+             setData = setData[type_arr[i]];
+           }
+        }
+        myCache.set(key,setData,exp);
       }
-      myCache.set(key,res,exp);
     }else{
       // console.log('mycache:'+key)
     }
     return res;
-  }
+  }  
 }
 
