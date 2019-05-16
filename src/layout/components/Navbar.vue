@@ -18,7 +18,7 @@
 
       <el-dropdown class="avatar-container right-menu-item hover-effect" trigger="click">
         <div class="avatar-wrapper">
-          <span class="username">{{name}}</span> <i class="el-icon-caret-bottom" />
+          <span class="username">{{userData.full_name}}</span> <i class="el-icon-caret-bottom" />
         </div>
         <el-dropdown-menu slot="dropdown">
           <a target="_blank" href="/">
@@ -60,7 +60,7 @@ export default {
       'sidebar',
       'name',
       'avatar',
-      'device'
+      'userData'
     ])
   },
   methods: {
