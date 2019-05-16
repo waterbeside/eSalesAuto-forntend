@@ -16,15 +16,14 @@ export default [
     name: 'development',
     meta: {
       title: 'Development',
-      icon: 'documentation'
+      icon: 'development'
     },
     children: [
       {
         path: 'auto_sppo',
         component: () => import('@/views/AutoSPPO'),
         name: 'autoSppo',
-        icon: 'documentation',
-        meta: { title: 'Auto SPPO' ,noCache:false},
+        meta: { title: 'Auto SPPO' , icon: 'fabric',},
         // children:[{
         //   path:'edit',
         //   name: 'editAutoSppo',
@@ -46,16 +45,15 @@ export default [
       redirect: '/bulk/auto_go',
       name: 'bulk',
       meta: {
-        title: 'bulk',
-        icon: 'documentation'
+        title: 'Bulk',
+        icon: 'bulk'
       },
       children: [
         {
           path: 'auto_go',
           component: () => import('@/views/AutoGO'),
           name: 'autoGo',
-          icon: 'documentation',
-          meta: { title: 'Auto GO',noCache:false }
+          meta: { title: 'Auto GO',icon: 'order'}
       }, 
       // {
       //   path: 'auto_sppo2',
@@ -155,7 +153,7 @@ export default [
     component: Layout,
     meta: {
       title: 'Mater Center',
-      icon: 'documentation'
+      icon: 'admin'
     },
     children: [{
       path: 'fabric',
@@ -163,22 +161,24 @@ export default [
       name: 'fabric',
       meta: {
         title: 'Fabric',
-        //icon: 'edit'
+        icon: 'fabric'
       },
     },{
       path: 'color',
       component: one,
       name: 'color',
       meta: {
-      title: 'Color',
-    },
+        title: 'Color',
+        icon: 'color'
+      },
     },{
       path: 'quantity',
       component: one,
       name: 'quantity',
       meta: {
-      title: 'Quantity',
-    },
+        title: 'Quantity',
+        icon: 'quantity'
+      },
     },{
       path: 'destination',
       component: one,
