@@ -1,5 +1,5 @@
 <template>
-	<el-dialog title="更正"  :visible.sync="open"  append-to-body :before-close="handleClose" >
+	<el-dialog title="更正"  :visible.sync="open"  append-to-body :before-close="handleClose" ref="editDialog">
 
     <el-form label-width="180px" :rules="itemRule" :model="editingRow" ref="editForm">
       <el-form-item label="Season"  prop="season">
@@ -29,7 +29,7 @@
       </el-form-item>
 
       <el-form-item label="SKU"  prop="sku">
-        <el-input v-model="editingRow.sku"></el-input>
+        {{sku}}
       </el-form-item>
       <el-form-item label="Combo"  prop="combo">
         <el-input v-model="editingRow.combo"></el-input>
@@ -77,7 +77,7 @@
 
 <script>
 import { myCache } from '@/utils/common';
-import { checkColorCombo,checkCollarCuffSize } from '@/utils/validate';
+import { checkGoCombo } from '@/utils/validate'
 import {sppoAPI,assistAPI} from '@/api';
 import moment from 'moment'
 import { parse } from 'path';
@@ -86,10 +86,11 @@ export default {
   props: {
     data:null,
     visible:false,
+    customerCode:'',
   },
   data() {
-    var validate_Color_Combo = (rule, value, callback) => {
-      checkColorCombo(value,(res)=>{
+    var validate_Combo = (rule, value, callback) => {
+      checkGoCombo(value,(res)=>{
         if(res.code === 0){
           callback();
         }else{
@@ -101,7 +102,7 @@ export default {
     return {
       editingRow: this.data,
       open: false,
-      
+      customer_code:  this.customerCode,
       selectBoxData:{
         gmt_fty: [
           {
@@ -117,13 +118,10 @@ export default {
         season: [
             { required: true, message: '请输入 Season', trigger: 'blur' }
         ],
-        sku: [
-            { required: true, message: '请输入 SKU', trigger: 'blur' }
-        ],
-        
+       
         combo: [
             { required: true, message: '请输入 Color_Combo', trigger: 'blur' },
-            { validator: validate_Color_Combo, trigger: 'blur' }
+            { validator: validate_Combo, trigger: 'blur' }
         ],
         category: [
             { required: true, message: '请输入 Category', trigger: 'blur' }
@@ -168,6 +166,18 @@ export default {
         }
       });
       return total_qty;
+    },
+    sku(){
+      let style_no = this.editingRow.style_no;
+      let combo = this.editingRow.combo;
+      let sku = this.editingRow.sku;
+      if(typeof(combo)!='undefined' && combo.length > 3){
+         let combo_no = combo.substring(0,2);
+         if(parseInt(combo_no)>0){
+           sku = style_no + '-' + parseInt(combo_no);
+         }
+      }
+      return sku;
     }
   },
   watch: {
@@ -183,10 +193,19 @@ export default {
       }
     },
     data(val) {
-      console.log(val);
-        if (val) {
-          this.editingRow = val;
-        }
+      if (val) {
+        this.editingRow = val;
+      }
+    },
+    customerCode(val){
+      if (val) {
+        this.customer_code = val;
+      }
+    },
+    customerCode(val){
+      if (val) {
+        this.customer_code = val;
+      }
     },
   },
   methods: {
@@ -195,6 +214,30 @@ export default {
           this.$refs.editForm.resetFields(); 
       }
       this.getFactory();
+      this.scrollToTop();
+      this.getSizes();
+    },
+    /** 
+     * 取得尺寸字段列表
+     */
+    getSizes(){
+      let customer_code = this.customer_code;
+      myCache.do('getSizes:'+customer_code,[assistAPI.getSizes,{customer_code}],600).then(res=>{
+        let sizeFields = [];
+        for(let i in res){
+          let newItem = {
+            name  :res[i].toLowerCase(),
+            label :res[i].toUpperCase(),
+          }
+          sizeFields.push(newItem)
+        }
+        this.sizeFields = sizeFields;
+      }).catch(error=>{
+        console.log(error)
+      });
+    },
+    scrollToTop(){
+      this.$refs.editDialog.$el.scrollTop = 0;
     },
     handleClose:function(){
       this.open = false;
@@ -202,11 +245,23 @@ export default {
     },
     //关闭对话框
     handleOK(){
-      this.editingRow.pdo_date = moment(this.editingRow.pdo_date).format('YYYY-MM-DD');
-      this.editingRow.total_qty = this.total_qty;
-      console.log(this.editingRow.pdo_date)
-      this.$emit('OK',this.editingRow);
-      this.handleClose();
+      this.$refs['editForm'].validate((valid,res) => {
+        if (valid) {
+          this.editingRow.pdo_date = moment(this.editingRow.pdo_date).format('YYYY-MM-DD');
+          this.editingRow.total_qty = this.total_qty;
+          this.editingRow.sku = this.sku;
+          console.log(this.editingRow.pdo_date)
+          this.$emit('OK',this.editingRow);
+          this.handleClose();
+        }else{
+          let errorMsg = '填写有误，请检查后再保存';
+          for(let k in res){
+           this.$message.error(res[k][0].message);
+           this.scrollToTop()
+           break;
+          }
+        }
+      })
     },
     //关闭对话框
     handleCancel(){

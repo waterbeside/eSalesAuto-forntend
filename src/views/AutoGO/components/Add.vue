@@ -55,6 +55,7 @@
         v-show="is_hasUploadExcel"  
         @sort-change="sortChange"
         border stripe >
+
         <el-table-column v-for="fieldItem of tableFields" 
           :key="fieldItem.name" 
           :prop="fieldItem.name" 
@@ -71,11 +72,10 @@
             <el-tooltip  effect="dark" placement="top"  :content="typeof(errorMsg[scope.$index][fieldItem.name])!='undefined' ? errorMsg[scope.$index][fieldItem.name] : fieldItem.label" v-show="true">
               <span>{{scope.row[fieldItem.name] ? scope.row[fieldItem.name] : '&nbsp;&nbsp;'}}</span>
             </el-tooltip>
-
           </div>
         </el-table-column>
 
-        <el-table-column   label="操作" width="160" fixed="right"  >
+        <el-table-column   label="操作" width="170" fixed="right"  >
           <div slot-scope="scope" >
             <template v-if="scope.$index === editingRow_index">
               正在编辑...
@@ -85,15 +85,22 @@
             </template>
             <template v-else>
               <el-button @click="handleEditTableItem(scope)" type="primary" size="mini" icon="el-icon-edit"></el-button>
-              <el-button @click="checkTableItem(scope.row,scope.$index)" size="mini" plain 
-                :type="checkBtnStyle[scope.row.check] ? checkBtnStyle[scope.row.check] : 'default'" 
-                :loading="scope.row.check === 2 || checkingRow.has(scope.$index)" 
-                :icon="checkBtnIcon[scope.row.check] ? checkBtnIcon[scope.row.check] : ''" >
-                检验
-              </el-button>
-             
-
-
+              <template v-if="checkingRow.has(scope.$index)">
+                <el-button  :disabled="true" size="mini" plain 
+                  :type="checkBtnStyle[2] ? checkBtnStyle[2] : 'default'" 
+                  :loading="true" 
+                  :icon="checkBtnIcon[2] ? checkBtnIcon[2] : ''" >
+                  检验
+                </el-button>
+              </template>
+              <template v-else>
+                <el-button @click="checkTableItem(scope.row,scope.$index)" size="mini" plain 
+                  :type="checkBtnStyle[scope.row.check] ? checkBtnStyle[scope.row.check] : 'default'" 
+                  :loading="scope.row.check === 2 || checkingRow.has(scope.$index)" 
+                  :icon="checkBtnIcon[scope.row.check] ? checkBtnIcon[scope.row.check] : ''" >
+                  检验
+                </el-button>
+              </template>
             </template>
             
           </div>
@@ -116,7 +123,7 @@
 
 
     <!--编辑单项界面-->
-    <edit-excel-item @close="handleCancelEdit" @OK="handleConfirmEdit" :data="editingRow"  :visible.sync="is_showEditItem" />
+    <edit-excel-item @close="handleCancelEdit" @OK="handleConfirmEdit" :data="editingRow"  :visible.sync="is_showEditItem"  :customerCode="formData.customer_code"/>
     
   </div>
 </template>
@@ -130,14 +137,7 @@ import EditExcelItem from './EditExcelItem'
 import { mapGetters } from 'vuex'
 
 import {goAPI,assistAPI} from '@/api'
-import { checkColorCombo,checkCollarCuffSize } from '@/utils/validate'
-
-
-// import {getBrandCode} from '@/api/genBrand'
-// import {getFactoryIds} from '@/api/genFactory'
-// import {checkFabricTypeExist} from '@/api/fabFabric'
-// import {checkWashTypeExist} from '@/api/genWash'
-
+import { checkGoCombo,checkMustSame } from '@/utils/validate'
 
 
 export default {
@@ -155,7 +155,7 @@ export default {
       is_listLoading: false,
       is_showTips: false,
       tips:'',
-      tableFields : [
+      tableFields_1 : [
         {name:'season',label:'Season',width:90},
         {name:'gmt_fty',label:'GMT_FTY',width:100},
         {name:'outsource',label:'OutSource',width:110},
@@ -163,18 +163,8 @@ export default {
         {name:'sku',label:'SKU',width:140},
         {name:'combo',label:'Combo',minWidth:150},
         {name:'bpo_date',label:'BPO_Date',width:100},
-        {name:'xs',label:'XS',width:60},
-        {name:'s',label:'S',width:60},
-        {name:'m',label:'M',width:60},
-        {name:'l',label:'L',width:60},
-        {name:'xl',label:'XL',width:60},
-        {name:'xxl',label:'XXL',width:60},
-        {name:'3xl',label:'3XL',width:60},
-        {name:'4xl',label:'4Xl',width:60},
-        {name:'5xl',label:'5Xl',width:60},
-        {name:'6xl',label:'6XL',width:60},
-        {name:'7xl',label:'7XL',width:60},
-        {name:'8xl',label:'8XL',width:60},
+      ],
+      tableFields_2:[
         {name:'total_qty',label:'Total_Qty',width:100},
         {name:'category',label:'Category',width:130},
         {name:'bpo_no',label:'BPO_NO',width:120},
@@ -212,6 +202,7 @@ export default {
         handler(newValue, oldValue) {
           if(oldValue !== newValue && newValue){
             this.getBrand();
+            this.getSizes();
           }
         },
         // deep: true
@@ -234,6 +225,22 @@ export default {
   computed: {
     is_checkAll(){
       return this.errorRow.length > 0 ? false : true;
+    },
+    tableFields_size(){
+      let tableFields_size = [];
+      this.sizeFields.forEach(item=>{
+        let newItem = {
+          name  :item.toLowerCase(),
+          label :item.toUpperCase(),
+          width:60,
+        }
+        tableFields_size.push(newItem);
+      })
+      return tableFields_size;
+    },
+    tableFields(){
+      let tableFields = [];
+      return tableFields.concat(this.tableFields_1).concat(this.tableFields_size).concat(this.tableFields_2)
     }
   },
 
@@ -247,7 +254,6 @@ export default {
     init(){
       this.getCustomerCode();
       this.getBrand();
-      this.getFactory();
     },
     getTempData(key){
       return typeof(this.tempData[key])!="undefined" ?  this.tempData[key] : null;
@@ -295,21 +301,19 @@ export default {
       })
     },
     /** 
-     * 取得分厂选择列表
+     * 取得尺寸字段列表
      */
-    getFactory(){
-      this.$store.dispatch('cacheData/getFactorys', 1).then((res) => {
-          let factory_selector_list = [];
-          res.forEach(item => {
-            factory_selector_list.push({
-              label:item,
-              value:item,
-            })
-          });
-          this.selectBoxData.garment_fty = factory_selector_list;
-      }).catch((error) => {
+    getSizes(){
+      let customer_code = this.formData.customer_code;
+      myCache.do('getSizes:'+customer_code,[assistAPI.getSizes,{customer_code}],600).then(res=>{
+        let sizeFields = [];
+        for(let i in res){
+          sizeFields.push(res[i].toLowerCase())
+        }
+        this.sizeFields = sizeFields;
+      }).catch(error=>{
         console.log(error)
-      })
+      });
     },
     
     /** 
@@ -395,7 +399,7 @@ export default {
         let hasError = false;
         let errorMsg = this.errorMsg;
         row.check = 2; //状态进行中
-        this.$set(this.tableData,index,row);
+        // this.$set(this.tableData,index,row);
         row.error = [];
 
         errorMsg[index] = {}
@@ -419,10 +423,7 @@ export default {
           }
         })
         
-        //验证必须为整数的字段
-        const checkIntegerField = [
-          'xs','s','m','l','xl','xxl','3xl','4xl','5xl','6xl','7xl','8xl','total_qty',
-        ];
+        //验证尺码字段必须为整数
         let total_qty = 0;
         this.sizeFields.forEach(item=>{
           let valueFormat =  _.toInteger(row[item]);
@@ -439,23 +440,65 @@ export default {
 
 
         let combo = _.trim(row.combo);
+        
         //color_combo 第三位必须为空格
         if(combo != ''  ){
-          checkColorCombo(combo,(res)=>{
+          checkGoCombo(combo,(res)=>{
             if(res.code !== 0){
               errorMsg[index].combo = res.msg;
               row.error.push('combo');
               hasError = true;
+            }else{
+              let sku = row.sku;
+              let combo_no = combo.substring(0,2);
+              sku = row.style_no +'-'+ parseInt(combo_no);
+              row.sku = sku;
             }
           })
         }
+        
+
 
         if(!['y','n'].includes(_.trim(row.outsource).toLowerCase())){
           errorMsg[index].outsource = 'OutSource 必须为Y或者N';
           row.error.push('outsource');
           hasError = true;
         }
+        if(_.trim(row.style_no)!=''){
+
+          let otherdRowIndex = checkMustSame(row,this.tableData,['style_no','gmt_fty']);
+          if(otherdRowIndex != -1){
+            let msg = "相同Style_No, 所有的GMT_FTY也要相同";
+            errorMsg[index].gmt_fty = msg;
+            if(typeof(errorMsg[otherdRowIndex])=="undefined"){
+              errorMsg[otherdRowIndex] = {};
+            }
+            errorMsg[otherdRowIndex].gmt_fty = msg;
+            row.error.push('gmt_fty');
+            hasError = true;
+            let otherErrorRow = this.tableData[otherdRowIndex];
+            otherErrorRow.error.push('gmt_fty');
+            this.$set(this.tableData,otherdRowIndex,otherErrorRow);
+          }
+
+          otherdRowIndex = checkMustSame(row,this.tableData,['style_no','fds_no']);
+          if(otherdRowIndex != -1){
+            let msg = "相同Style_No, 所有的FDS_No也要相同";
+            errorMsg[index].fds_no = msg;
+            if(typeof(errorMsg[otherdRowIndex])=="undefined"){
+              errorMsg[otherdRowIndex] = {};
+            }
+            errorMsg[otherdRowIndex].fds_no = msg;
+            row.error.push('fds_no');
+            hasError = true;
+            let otherErrorRow = this.tableData[otherdRowIndex];
+            otherErrorRow.error.push('fds_no');
+            this.$set(this.tableData,otherdRowIndex,otherErrorRow);
+          }
+          
+        }
        
+
         //验证GMT_FTY;
         try{
           let factorysList = await this.$store.dispatch('cacheData/getFactorys', 1)
@@ -514,7 +557,7 @@ export default {
         i++
         window.setTimeout(async ()=>{
           await this.handleCheckAll(i);
-        },100)
+        },80)
         return true
       }else{
         this.tips =  "检查完成!";
