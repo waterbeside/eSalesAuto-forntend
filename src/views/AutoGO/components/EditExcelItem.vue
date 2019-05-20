@@ -1,5 +1,5 @@
 <template>
-	<el-dialog title="更正"  :visible.sync="open"  append-to-body :before-close="handleClose" ref="editDialog">
+	<el-dialog title="更正"  :visible.sync="open"  append-to-body :before-close="handleClose" ref="editDialog" :close-on-click-modal="false" >
 
     <el-form label-width="180px" :rules="itemRule" :model="editingRow" ref="editForm">
       <el-form-item label="Season"  prop="season">
@@ -58,7 +58,15 @@
       </el-form-item>
 
       <el-form-item label="Warehouse" prop="warehouse">
-        <el-input v-model="editingRow.warehouse"></el-input>
+        <el-select v-model="editingRow.warehouse" filterable placeholder="Warehouse">
+            <el-option
+              v-for="item in selectBoxData.warehouse"
+              :key="item.value"
+              :label="item.label"
+              :value="item.value"
+              :disabled="item.disabled">
+            </el-option>
+          </el-select>
       </el-form-item>
 
       <el-form-item label="FDS_No" prop="fds_no">
@@ -104,11 +112,8 @@ export default {
       open: false,
       customer_code:  this.customerCode,
       selectBoxData:{
-        gmt_fty: [
-          {
-            value: 'TDC',
-            label: 'TDC'
-          }]
+        warehouse: [],
+        gmt_fty: []
       },
       
       itemRule : {
@@ -130,7 +135,7 @@ export default {
             { required: true, message: '请输入 BPO_NO', trigger: 'blur' }
         ],
         warehouse: [
-            { required: true, message: '请输入 Warehouse', trigger: 'blur' }
+            { required: true, message: '请输入 Warehouse', trigger: 'change' }
         ],
         fds_no: [
             { required: true, message: '请输入 FDS_No', trigger: 'blur' }
@@ -202,11 +207,6 @@ export default {
         this.customer_code = val;
       }
     },
-    customerCode(val){
-      if (val) {
-        this.customer_code = val;
-      }
-    },
   },
   methods: {
     init(){
@@ -216,6 +216,8 @@ export default {
       this.getFactory();
       this.scrollToTop();
       this.getSizes();
+      this.getMarkets();
+
     },
     /** 
      * 取得尺寸字段列表
@@ -232,6 +234,41 @@ export default {
           sizeFields.push(newItem)
         }
         this.sizeFields = sizeFields;
+      }).catch(error=>{
+        console.log(error)
+      });
+    },
+    /** 
+     * 取得分厂选择列表
+     */
+    getFactory(){
+      this.$store.dispatch('cacheData/getFactorys', 1).then((res) => {
+          let factory_selector_list = [];
+          res.forEach(item => {
+            factory_selector_list.push({
+              label:item,
+              value:item,
+            })
+          });
+          this.selectBoxData.gmt_fty = factory_selector_list;
+      }).catch((error) => {
+        console.log(error)
+      })
+    },
+    /** 
+     * 取得市场warehouse列表
+     */
+    getMarkets(){
+      myCache.do('getMarkets',[assistAPI.getMarkets,null,'data.list'],60*60).then(res=>{
+        console.log(res);
+        let warehouse = [];
+        res.forEach(item => {
+          warehouse.push({
+            label:item.Warehouse,
+            value:item.Warehouse,
+          })
+        });
+        this.selectBoxData.warehouse = warehouse;
       }).catch(error=>{
         console.log(error)
       });
@@ -268,23 +305,7 @@ export default {
       this.$emit('cancel',this.editingRow);
       this.handleClose();
     },
-    /** 
-     * 取得分厂选择列表
-     */
-    getFactory(){
-      this.$store.dispatch('cacheData/getFactorys', 1).then((res) => {
-          let factory_selector_list = [];
-          res.forEach(item => {
-            factory_selector_list.push({
-              label:item,
-              value:item,
-            })
-          });
-          this.selectBoxData.gmt_fty = factory_selector_list;
-      }).catch((error) => {
-        console.log(error)
-      })
-    },
+    
   },
   created () {
   },
