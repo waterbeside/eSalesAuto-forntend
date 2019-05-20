@@ -97,8 +97,9 @@
     & .el-submenu .el-menu-item {
       min-width: $sideBarWidth !important;
       background-color: $subMenuBg !important;
-      padding-left: 20px !important; 
-
+      padding-left: 30px !important; 
+      font-size: 12px;
+      .svg-icon { margin-right: 12px !important}
       &:hover {
         background-color: $subMenuHover !important;
       }
