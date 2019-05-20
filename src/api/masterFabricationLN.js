@@ -2,12 +2,10 @@ import request from '@/utils/request'
 import settings from '@/settings.js'
 
 export function getList(params) {
-  return new Promise((resole,reject)=>{
-    request({
-      url: settings.apiBaseUrl+'/api/v1/master_fabrication_ln',
-      method: 'get',
-      params
-    })
+  return request({
+    url: settings.apiBaseUrl+'/api/v1/master_fabrication_ln',
+    method: 'get',
+    params
   })
 }
 
