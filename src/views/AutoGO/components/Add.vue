@@ -166,7 +166,7 @@ export default {
       ],
       tableFields_2:[
         {name:'total_qty',label:'Total_Qty',width:100},
-        {name:'category',label:'Category',width:130},
+        // {name:'category',label:'Category',width:130},
         {name:'bpo_no',label:'BPO_NO',width:120},
         {name:'warehouse',label:'Warehouse',width:100},
         {name:'fds_no',label:'FDS_No',width:120},
@@ -413,7 +413,7 @@ export default {
 
         //验证不能为空的字段
         const checkEmptyField = [
-          'season','gmt_fty','outsource','style_no','sku','combo','category','bpo_no','warehouse','fds_no'
+          'season','gmt_fty','outsource','style_no','sku','combo','bpo_no','warehouse','fds_no'
         ];
         checkEmptyField.forEach((item)=>{
           if( _.trim(row[item]) == ''){
