@@ -5,8 +5,8 @@
   <el-form :inline="true"   label-width="128px"  :model="formData" :rules="rules"  ref="editForm" >
     <el-row :gutter="0">
       <el-col :span="12">
-        <el-form-item label="PPO_NO" prop="PPO_NO">
-          <el-input placeholder="PPO_NO"  v-model="formData.PPO_NO" :disabled="true"></el-input>
+        <el-form-item label="GO_NO" prop="GO_NO">
+          <el-input placeholder="GO_NO"  v-model="formData.GO_NO" :disabled="true"></el-input>
         </el-form-item>
       </el-col>
       <el-col :span="12">
@@ -20,28 +20,15 @@
         </el-form-item>
       </el-col>
       <el-col :span="12">
-        <el-form-item label="Garment_Wash" prop="Garment_Wash">
-          <el-select v-model="formData.Garment_Wash" filterable placeholder="Garment_Wash">
-            <el-option
-              v-for="item in selectBoxData.garment_wash"
-              :key="item.value"
-              :label="item.label"
-              :value="item.value"
-              :disabled="item.disabled">
-            </el-option>
-          </el-select>
+        <el-form-item label="FDS_NO"  prop="FDS_No" >
+          <el-input placeholder="FDS_NO" v-model="formData.FDS_No"></el-input>
         </el-form-item>
       </el-col>
-      <el-col :span="12">
-         <el-form-item label="Delivery" prop="Delivery" >
-            <el-date-picker type="date" placeholder="交期" v-model="formData.Delivery"></el-date-picker>
-        </el-form-item>
-      </el-col>
-      <el-col :span="12">
-        <el-form-item label="Destination" prop="Destination">
-          <el-select v-model="formData.Destination" filterable placeholder="Destination">
+       <el-col :span="12">
+        <el-form-item label="GMT_FTY" prop="GMT_FTY">
+          <el-select v-model="formData.GMT_FTY" filterable placeholder="GMT_FTY">
               <el-option
-                v-for="item in selectBoxData.destination"
+                v-for="item in selectBoxData.GMT_FTY"
                 :key="item.value"
                 :label="item.label"
                 :value="item.value"
@@ -50,6 +37,22 @@
             </el-select>
         </el-form-item>
       </el-col>
+      <el-col :span="12">
+        <el-form-item label="OutSource" prop="OutSource">
+          <el-select v-model="formData.OutSource" filterable placeholder="OutSource">
+            <el-option   label="Y"   :value="1">Y</el-option>
+            <el-option   label="N"   :value="0">N </el-option>
+          </el-select>
+        </el-form-item>
+      </el-col>
+
+      <!-- <el-col :span="12">
+        <el-form-item label="Category"  prop="category" >
+          <el-input placeholder="Category" v-model="formData.category"></el-input>
+        </el-form-item>
+      </el-col> -->
+  
+     
   
     </el-row>
         <!--  -->
@@ -60,7 +63,28 @@
         
         <!-- table列表 -->
     <el-table  :data="tableData" border style:="width: 100%" ref="editTable"   v-if="!is_loadingData">
-      <el-table-column v-for="fieldItem of tableFields" 
+      <el-table-column v-for="fieldItem of tableFields_1" 
+        :key="fieldItem.name" 
+        :prop="fieldItem.name" 
+        :label="fieldItem.label"  
+        :width="fieldItem.width" 
+        :min-width="fieldItem.minWidth"
+        :fixed="fieldItem.fixed ? fieldItem.fixed : false"  >
+        <div slot-scope="scope"   >
+          {{scope.row[fieldItem.name]}}
+        </div>
+      </el-table-column>
+      <el-table-column v-for="fieldItem of tableFields_size" 
+        :key="fieldItem.name" 
+        :label="fieldItem.label"  
+        :width="fieldItem.width" 
+        :min-width="fieldItem.minWidth"
+        :fixed="fieldItem.fixed ? fieldItem.fixed : false"  >
+        <div slot-scope="scope"   >
+          {{scope.row['sizes'][fieldItem.name]}}
+        </div>
+      </el-table-column>
+      <el-table-column v-for="fieldItem of tableFields_2" 
         :key="fieldItem.name" 
         :prop="fieldItem.name" 
         :label="fieldItem.label"  
@@ -87,7 +111,7 @@
     <el-button @click="handleOK" type="primary"   :loading="is_submiting" :disabled="is_submiting" >提交</el-button>
   </div>
   <!--编辑单项界面-->
-  <edit-edit-item @close="handleCancelTableEdit" @OK="handleConfirmTableEdit" :data="editingRow"  :visible.sync="is_showEditItem" />
+  <edit-edit-item @close="handleCancelTableEdit" @OK="handleConfirmTableEdit" :data="editingRow" :extraData="extraData" :index="editingRow_index"  :visible.sync="is_showEditItem" />
 
 </div>
 
@@ -95,12 +119,12 @@
 </template>
 
 <script>
-import {sppoAPI,assistAPI} from '@/api'
-import { changeCaseJsonKey } from '@/utils/common'
+import {goAPI,assistAPI} from '@/api'
+import { changeCaseJsonKey,deepCopy } from '@/utils/common'
 import { checkDelivery } from '@/utils/validate'
 import moment from 'moment'
-
 import EditEditItem from './EditEditItem'
+import { setTimeout } from 'timers';
 
 export default {
   components: { EditEditItem },
@@ -109,28 +133,22 @@ export default {
     visible:false,
   },
   data() {
-    var validate_Delivery =  (rule, value, callback) => {
-       if(checkDelivery(value)){
-         callback()
-       }else{
-         callback(new Error('Delivery 交期必须在今天之后'))
-       }
-    };
+    
     return {
       is_loadingData:false,
       is_showEditItem:false,
       itemData:this.data,
-      sppoData:null,
+      goData:null,
       formData:{
         Season:'',
-        Garment_Wash:'',
-        Delivery:null,
-        Destination:'',
+        FDS_No:'',
+        GMT_FTY:'',
+        OutSource:'',
+        // category:'',
       },
       is_submiting:false,
       selectBoxData:{
-        garment_wash:[],
-        destination:[]
+        GMT_FTY:[]
       },
       ppo_no_string:'',
       ppo_no_array:'',
@@ -138,45 +156,63 @@ export default {
         Season: [
             { required: true, message: '请输入 Season', trigger: 'blur' }
         ],
-        Garment_Wash: [
-            { required: true, message: '请选择 Garment_Wash', trigger: 'change' }
+        FDS_No: [
+            { required: true, message: '请输入 FDS_NO', trigger: 'blur' }
         ],
-        Delivery: [
-            { required: true, message: '请选择日期', trigger: 'blur' },
-            { validator: validate_Delivery, trigger: 'change' }
-        ],
-        Destination: [
+        GMT_FTY: [
             { required: true, message: '请选择 destination', trigger: 'change' }
         ],
+        OutSource: [
+          { required: true, message: '请输入 OutSource', trigger: 'blur' }
+        ],
+        
       },
-      tableFields : [
-        {name:'Garment_Part',label:'Garment_Part',width:140},
-        {name:'Customer_Fab_Code',label:'Customer_Fab_Code',width:170},
-        {name:'Color_Combo',label:'Color_Combo',minWidth:150},
-        {name:'LD_STD',label:'LD_STD',width:120},
-        {name:'Collar_Cuff_Size',label:'Collar_Cuff_Size',width:140},
-        {name:'Qty',label:'Quantity',width:140},
-        {name:'Unit',label:'Unit',width:140},
-        {name:'Remark',label:'Remark',width:140},
+      tableFields_1 : [
+        {name:'sku',label:'SKU',width:140},
+        {name:'combo',label:'Combo',minWidth:150},
+        {name:'bpo_date',label:'BPO_Date',width:100},
+        {name:'bpo_no',label:'BPO_NO',width:120},
+        {name:'warehouse',label:'Warehouse',width:100},
+        
       ],
+      tableFields_2:[
+        {name:'total_qty',label:'Total_Qty',width:100},
+      ],
+      sizeFields:[],
       tableData:[],
       editingRow : { },
       editingRow_index : null,
       errorIndex : [],
+      extraData:{},
+      errorRow:[],
       
 
     }
   },
   computed:{
+    tableFields_size(){
+      let tableFields_size = [];
+      this.sizeFields.forEach(item=>{
+        let newItem = {
+          name  :item.toLowerCase(),
+          label :item.toUpperCase(),
+          width:60,
+        }
+        tableFields_size.push(newItem);
+      })
+      return tableFields_size;
+    },
+    
+   
    
   },
   watch: {
     data(val) {
       console.log('val')
-      console.log(val.PPO_NO)
+      console.log(val.GO_NO)
       if (val) {
         this.itemData = val;
-        this.getSppoData();
+        this.getGoData();
       }
     },
     
@@ -187,103 +223,108 @@ export default {
         this.loadingObj.close();
       }
     },
-    
+    formData: {
+      handler(newValue, oldValue) {
+          this.extraData = Object.assign(this.extraData,newValue)
+      },
+      deep: true
+    },
+ 
   },
   methods: {
     init(){
 
       this.formData={
         Season:'',
-        Garment_Wash:'',
-        Delivery:null,
-        Destination:'',
+        FDS_No:'',
+        GMT_FTY:'',
+        OutSource:'',
       };
       this.errorIndex = [],
       
       
       this.getFactory();
-      this.getWashTypes();
-      this.$refs['editForm'].resetFields();
+      if(typeof(this.$refs.editForm)!="undefined"){
+          this.$refs.editForm.resetFields(); 
+      }
       
     },
     /** 
      * 取得分厂选择列表
      */
     getFactory(){
-      let cacheList = this.$store.state.cacheData.factorys;
-      if(cacheList && cacheList.length > 0){
-        this.selectBoxData.destination = cacheList;
-        return ;
-      }
-      assistAPI.getFactoryIds().then((res)=>{
-        let list = res.data.list;
-        let factory_selector_list = [];
-        list.forEach(item => {
+      this.$store.dispatch('cacheData/getFactorys', 1).then((res) => {
+          let factory_selector_list = [];
+          res.forEach(item => {
             factory_selector_list.push({
               label:item,
               value:item,
             })
-        });
-        this.selectBoxData.destination = factory_selector_list;
-        this.$store.commit('cacheData/SET_FACTORYS',factory_selector_list);
+          });
+          this.selectBoxData.GMT_FTY = factory_selector_list;
+      }).catch((error) => {
+        console.log(error)
       })
     },
 
-     /** 
-     * 取得garment_wash
-     */
-    getWashTypes(){
-      let cacheList = this.$store.state.cacheData.washTypes;
-      if(cacheList && cacheList.length > 0){
-        this.selectBoxData.garment_wash = cacheList;
-        return ;
-      }
-      assistAPI.getWashTypes().then((res)=>{
-        let list = res.data.list;
-        let washTypes_selector_list = [];
-        list.forEach(item => {
-            washTypes_selector_list.push({
-              label:item,
-              value:item,
-            })
-        });
-        this.selectBoxData.garment_wash = washTypes_selector_list;
-        this.$store.commit('cacheData/SET_WASH_TYPES',washTypes_selector_list);
-      })
-    },
+    
     /**
      * 
      */
-    getSppoData(){
+    getGoData(){
       return new Promise((resolve,reject)=>{
         this.is_loadingData = true,
 
-        sppoAPI.getDetail({ppo_no:this.itemData.PPO_NO}).then(res=>{
+        goAPI.getDetail({go_no:this.itemData.GO_NO}).then(res=>{
           this.is_loadingData = false
           if(res.code===0){
             let data = res.data
             this.formData = {
-              PPO_NO : data.sppoTitle.PPO_NO,
-              Style_No : data.sppoTitle.Style_No,
-              Season : data.sppoTitle.Season,
-              Garment_Wash : data.sppoTitle.Garment_Wash,
-              Delivery : data.sppoGpDelDest[0].Delivery,
-              Destination : data.sppoGpDelDest[0].Destination,
+              GO_NO : data.goTitle.GO_NO,
+              Style_No : data.goTitle.Style_No,
+              Season : data.goTitle.Season,
+              FDS_No : data.goTitle.FDS_No,
+              GMT_FTY : data.goTitle.Factory,
+              OutSource : data.goTitle.OutSource,
             }
+           
+            this.sizeFields = data.size_fields.map(el=>{
+              return el.toLowerCase()
+            });
+
+
+            
+         
+            let color_code_list = [];
             this.tableData = data.itemList.map((item,index)=>{
-              
-              let newItem = {
-                Garment_Part      : item.sppoGpDelDest ? item.sppoGpDelDest.Garment_Part  : '' ,
-                Customer_Fab_Code : item.sppoGpDelDest ? item.sppoGpDelDest.Customer_Fab_Code : '',
-                Color_Combo       : item.sppoColorQty ? item.sppoColorQty.Color_Combo : '',
-                LD_STD             : item.sppoColorQty ? item.sppoColorQty.LD_STD : '',
-                Collar_Cuff_Size    : item.sppoCollarCuff ? item.sppoCollarCuff.Size : '',
-                Qty            : item.sppoColorQty ? item.sppoColorQty.Qty : '',
-                Unit            : item.sppoGpDelDest ? item.sppoGpDelDest.Unit : '',
-                Remark            : item.sppoGpDelDest ? item.sppoGpDelDest.Remark : '',
+              let sizes = {}
+              for(let i in item.colorQtyList){
+                let el = item.colorQtyList[i];
+                sizes[el.Size.toLowerCase()] = el.Qty;
               }
+              let newItem = {
+                combo        : item.Color_Combo ? item.Color_Combo : '',
+                color_code        : item.Color_Code ? item.Color_Code : '',
+                bpo_date     : item.goLotInfo ? moment(item.goLotInfo.BPO_Date).format('YYYY-MM-DD') : '',
+                bpo_no       : item.goLotInfo ? item.goLotInfo.BPO_NO : '',
+                warehouse    : item.goLotInfo ? item.goLotInfo.Warehouse : '',
+                total_qty    : _.sumBy(item.colorQtyList,o=>{return o.Qty}),
+                sku          : data.goTitle.Style_No+"-"+parseInt(item.Color_Code),
+                sizes,
+              }
+              color_code_list[index] = {
+                [item.goLotInfo.BPO_NO] : newItem.color_code,
+              }
+              this.errorRow.push(index); //用于检查是否可按提交按钮
               return newItem;
             })
+            this.extraData = {
+              ...this.formData,
+              titleData:data.goTitle,
+              sizeFields:this.sizeFields,
+            }
+            this.setColorColdeList();
+         
             if(typeof(this.$refs.editForm)!="undefined"){
               this.$refs.editForm.resetFields(); 
             }
@@ -301,9 +342,22 @@ export default {
       
     },
 
+    setColorColdeList(){
+      let tableData = this.tableData;
+      let cc_list = tableData.map((el,index)=>{
+         return {
+           index,
+           color_code:el.color_code,
+           bpo_no:el.bpo_no,
+         }
+      })
+      this.extraData.color_code_list = cc_list;
+      console.log('this.extraData')
+      console.log(this.extraData)
+    },
+
     //关闭对话框
     handleOK(){
-
       this.$refs['editForm'].validate((valid) => {
         if (valid) {
             let formData = changeCaseJsonKey(Object.assign({},this.formData));
@@ -313,16 +367,16 @@ export default {
               data:this.tableData,
             }
             //提交到API
-            sppoAPI.edit(data).then(res=>{
+            goAPI.edit(data).then(res=>{
                 console.log(res);
                 if(res.code===0){
-                  this.$emit('OK',data);
-                  this.handleCloseDialog();
+                  this.successAction(data);
+                }else{
+                  this.$message.success(res.msg);
                 }
-                this.$message.success("编辑成功！");
                 this.is_submiting = false;
             }).catch(error=>{ 
-              if(typeof(error.code)!="undefined" && typeof(error.data.errorData)!="undefined"){
+              if(typeof(error.code)!="undefined" && error.data && typeof(error.data.errorData)!="undefined"){
                   this.errorIndex = error.data.errorData.errorIndex;
               }
               console.log(error)
@@ -334,7 +388,18 @@ export default {
           return false;
         }
       });
-
+    },
+    /**
+     * 提交成功后
+     */
+    successAction(data){
+      this.$alert('提交成功', {confirmButtonText: 'OK',
+        type:'success',
+        callback:()=>{
+          this.$emit('OK',data);
+          this.handleCloseDialog();
+        }
+      })
     },
     //关闭对话框
     handleCloseDialog(){
@@ -346,7 +411,7 @@ export default {
       console.log(scope);
       let row = scope.row;
       row.edit = true;
-      this.editingRow       = Object.assign({},row);
+      this.editingRow       =  deepCopy(row);
       this.editingRow_index = scope.$index;
       this.is_showEditItem = true;
       // delete row.oValue;
@@ -361,19 +426,27 @@ export default {
         this.editingRow_index = null;
       }
     },
+    /**
+     * 表格编辑点击确认
+     */
     handleConfirmTableEdit(row){
       row.check = 1;
-      this.$set(this.tableData,this.editingRow_index,row);
+      let newItem = Object.assign({},this.editingRow,row);
+      this.$set(this.tableData,this.editingRow_index,newItem);
+      console.log('confirm this.tableData');
+      console.log(this.tableData);
+      this.setColorColdeList();
       if(!this.errorRow.includes(this.editingRow_index)){
         this.errorRow.push(this.editingRow_index);
       }
     },
+    
   },
   created () {
   },
   mounted() {
     this.init();
-    this.getSppoData()
+    this.getGoData()
   },
   
   activated() {
