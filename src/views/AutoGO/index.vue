@@ -321,7 +321,7 @@ export default {
       this.editingRow       = Object.assign({},row);
       this.editingRow_index = index;
       this.is_editFormVisible = true;
-      // this.$router.push({name: 'editAutoSppo', query: {ppo_no: this.editingRow.PPO_NO}});
+      // this.$router.push({name: 'editAutoGo', query: {go_no: this.editingRow.GO_NO}});
       
     },
     //关闭编辑界而
