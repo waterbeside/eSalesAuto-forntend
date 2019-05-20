@@ -15,6 +15,7 @@ import {checkFabricTypeExist} from '@/api/fabFabric'
 import {checkWashTypeExist,getWashTypes} from '@/api/genWash'
 import {getList as getCustomerFabCodes} from '@/api/masterFabricationLN'
 import {getSizes} from '@/api/masterSizes'
+import {getMarkets} from '@/api/masterGoMarket'
 
 export let passportAPI = { login,logout,getInfo }
 export let sppoAPI =  { getList,getDetail,add,del ,checkCustomerFabCodeExist,batchEdit,edit}
@@ -35,6 +36,7 @@ export let assistAPI =  {
     checkCustomerFabCodeExist,
     getCustomerFabCodes,
     getSizes,
+    getMarkets,
 }
 
  
