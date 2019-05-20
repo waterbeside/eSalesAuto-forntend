@@ -48,6 +48,22 @@ export function formatDateFromExcel(numb, format='YYYY-MM-DD') {
   return moment(time).format(format)
 }
 
+export function deepCopy(object) {
+  let resultObject = {};
+  for (let obj in object) {
+      if (typeof (object[obj]) == "object" && !Array.isArray(object[obj])) {
+          let x = {}
+          x[obj] = deepCopy(object[obj])
+          Object.assign(resultObject, x);
+      } else {
+          let x = {};
+          x[obj] = object[obj];
+          Object.assign(resultObject, x);
+      }
+  }
+  return resultObject;
+}
+
 
 /**
  * myCache工具
@@ -90,23 +106,25 @@ export let myCache = {
   },
 
   do:async(key,[fun,data=null,type="res"],exp=0)=>{
-    let res = myCache.get(key,exp);
-    if(res === null){
+    let resData = myCache.get(key,exp);
+    console.log('resData')
+    console.log(resData)
+    if(resData === null){
       if(typeof(fun)=='function'){
-        res = await fun(data);
-        let setData = res ;
+        let res = await fun(data);
+        resData = res ;
         if(type != 'res'){
-           let type_arr = res.split('.');
+           let type_arr = type.split('.');
            for(let i in type_arr){
-             setData = setData[type_arr[i]];
+            resData = resData[type_arr[i]];
            }
         }
-        myCache.set(key,setData,exp);
+        myCache.set(key,resData,exp);
       }
     }else{
       // console.log('mycache:'+key)
     }
-    return res;
+    return resData;
   }  
 }
 
