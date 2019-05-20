@@ -203,29 +203,27 @@ export default {
       
       this.getFactory();
       this.getWashTypes();
-      this.$refs['editForm'].resetFields();
+      if(typeof(this.$refs.editForm)!="undefined"){
+          this.$refs.editForm.resetFields(); 
+      }
       
     },
+    
     /** 
      * 取得分厂选择列表
      */
     getFactory(){
-      let cacheList = this.$store.state.cacheData.factorys;
-      if(cacheList && cacheList.length > 0){
-        this.selectBoxData.destination = cacheList;
-        return ;
-      }
-      assistAPI.getFactoryIds().then((res)=>{
-        let list = res.data.list;
-        let factory_selector_list = [];
-        list.forEach(item => {
+      this.$store.dispatch('cacheData/getFactorys', 0).then((res) => {
+          let factory_selector_list = [];
+          res.forEach(item => {
             factory_selector_list.push({
               label:item,
               value:item,
             })
-        });
-        this.selectBoxData.destination = factory_selector_list;
-        this.$store.commit('cacheData/SET_FACTORYS',factory_selector_list);
+          });
+          this.selectBoxData.destination = factory_selector_list;
+      }).catch((error) => {
+        console.log(error)
       })
     },
 
@@ -316,10 +314,10 @@ export default {
             sppoAPI.edit(data).then(res=>{
                 console.log(res);
                 if(res.code===0){
-                  this.$emit('OK',data);
-                  this.handleCloseDialog();
+                  this.successAction(data);
+                }else{
+                  this.$message.success(res.msg);
                 }
-                this.$message.success("编辑成功！");
                 this.is_submiting = false;
             }).catch(error=>{ 
               if(typeof(error.code)!="undefined" && typeof(error.data.errorData)!="undefined"){
@@ -334,7 +332,18 @@ export default {
           return false;
         }
       });
-
+    },
+    /**
+     * 提交成功后
+     */
+    successAction(data){
+      this.$alert('提交成功', {confirmButtonText: 'OK',
+        type:'success',
+        callback:()=>{
+          this.$emit('OK',data);
+          this.handleCloseDialog();
+        }
+      })
     },
     //关闭对话框
     handleCloseDialog(){
@@ -363,7 +372,8 @@ export default {
     },
     handleConfirmTableEdit(row){
       row.check = 1;
-      this.$set(this.tableData,this.editingRow_index,row);
+      let newItem = Object.assign({},this.editingRow,row);
+      this.$set(this.tableData,this.editingRow_index,newItem);
       if(!this.errorRow.includes(this.editingRow_index)){
         this.errorRow.push(this.editingRow_index);
       }
