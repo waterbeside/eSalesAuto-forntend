@@ -1,5 +1,5 @@
 <template>
-	<el-dialog title="更正"  :visible.sync="open"  append-to-body :before-close="handleClose" >
+	<el-dialog title="更正"  :visible.sync="open"  append-to-body :before-close="handleClose" :close-on-click-modal="false" >
 
     <el-form label-width="180px" :rules="itemRule" :model="editingRow" ref="editForm">
       <el-form-item label="Garment_Part" prop="Garment_Part">
