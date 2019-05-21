@@ -1,12 +1,6 @@
 
 import Layout from '@/layout'
 //import home from '@/components/Home'
-import one from '@/views/one'
-import two from '@/views/two'
-import three from '@/views/three'
-import four from '@/views/four'
-import five from '@/views/five'
-import six from '@/views/six'
 
 export default [
    {
@@ -63,38 +57,6 @@ export default [
       // }, 
       ]},
 
-
-  // {
-  //   path: '/example',
-  //   component: Layout,
-  //   redirect: '/example/list',
-  //   name: 'Example',
-  //   meta: {
-  //     title: 'example',
-  //     icon: 'example'
-  //   },
-  //   children: [
-  //     {
-  //       path: 'create',
-  //       component: () => import('@/views/example/create'),
-  //       name: 'CreateArticle',
-  //       meta: { title: 'createArticle', icon: 'edit' }
-  //     },
-  //     {
-  //       path: 'edit/:id(\\d+)',
-  //       component: () => import('@/views/example/edit'),
-  //       name: 'EditArticle',
-  //       meta: { title: 'editArticle', noCache: true },
-  //       hidden: true
-  //     },
-  //     {
-  //       path: 'list',
-  //       component: () => import('@/views/example/list'),
-  //       name: 'ArticleList',
-  //       meta: { title: 'articleList', icon: 'list' }
-  //     }
-  //   ]
-  // },
 
 //  {
 //   path: '/customer_data',
@@ -157,7 +119,7 @@ export default [
     },
     children: [{
       path: 'fabric',
-      component: one,
+      // component: one,
       name: 'fabric',
       meta: {
         title: 'Fabric',
@@ -165,7 +127,7 @@ export default [
       },
     },{
       path: 'color',
-      component: one,
+      // component: one,
       name: 'color',
       meta: {
         title: 'Color',
@@ -173,7 +135,7 @@ export default [
       },
     },{
       path: 'quantity',
-      component: one,
+      // component: one,
       name: 'quantity',
       meta: {
         title: 'Quantity',
@@ -181,7 +143,7 @@ export default [
       },
     },{
       path: 'destination',
-      component: one,
+      // component: one,
       name: 'destination',
       meta: {
       title: 'Destination',
@@ -189,7 +151,7 @@ export default [
       },
     },{
       path: 'sample_request',
-      component: one,
+      // component: one,
       name: 'sample_request',
       meta: {
       title: 'Sample Request',
@@ -197,7 +159,7 @@ export default [
       },
     },{
       path: 'customer_manuel',
-      component: one,
+      // component: one,
       name: 'customer_manuel',
       meta: {
       title: 'Customer Manuel',
