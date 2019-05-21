@@ -3,7 +3,7 @@ import settings from '@/settings.js'
 
 export function getList(params) {
   return request({
-    url: settings.apiBaseUrl+'/api/v1/master_fabrication_ln',
+    url: settings.apiBaseUrl+'/api/v1/master_fabrication_ln/get_customer_fab_codes',
     method: 'get',
     params
   })

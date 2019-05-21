@@ -96,3 +96,15 @@ export function checkCustomerFabCodeExist(params){
   })
 }
 
+
+/**
+ * 检查Customer_Fab_Code是否存在
+ * @param Object params 
+ */
+export function getCustomerFabCodes(params){
+  return  request({
+      url: settings.apiBaseUrl+'/api/v1/sppo/get_customer_fab_codes',
+      method: 'get',
+      params
+    })
+}
