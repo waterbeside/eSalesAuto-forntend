@@ -111,10 +111,10 @@ export default [
 
  
   {
-  path: '/mater_center',
+  path: '/master_center',
     component: Layout,
     meta: {
-      title: 'Mater Center',
+      title: 'Master Center',
       icon: 'admin'
     },
     children: [{
