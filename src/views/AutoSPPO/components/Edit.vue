@@ -163,7 +163,7 @@ export default {
       editingRow : { },
       editingRow_index : null,
       errorIndex : [],
-      
+      errorRow:[],      
 
     }
   },
