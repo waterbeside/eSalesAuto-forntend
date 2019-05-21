@@ -4,7 +4,7 @@
     <el-col :span="24" class="toolbar" style="padding-bottom: 0px;">
       <el-form :inline="true" :model="filters">
         <el-form-item label="GO_NO">
-          <el-input placeholder="GO_NO" v-model="filters.ppo_no"></el-input>
+          <el-input placeholder="GO_NO" v-model="filters.go_no"></el-input>
         </el-form-item>
         <el-form-item label="Season">
           <el-input  placeholder="Season" v-model="filters.season"></el-input>
@@ -111,7 +111,7 @@ export default {
   data() {
     return {
       filters: {
-        ppo_no: "",
+        go_no: "",
         season: "",
         date_range:[],
       },
@@ -213,7 +213,7 @@ export default {
     getList() {
       let param = {
         page: this.page,
-        ppo_no: this.filters.ppo_no,
+        go_no: this.filters.go_no,
         season: this.filters.season,
       };
       //处理时间
@@ -307,7 +307,7 @@ export default {
     handleAddSuccess(){
       this.page = 1;
       this.filters= {
-        ppo_no: "",
+        go_no: "",
         season: "",
         date_range:[],
       };
