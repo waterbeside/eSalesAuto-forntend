@@ -49,9 +49,9 @@
         <!-- <el-input v-model="editingRow.total_qty" disabled></el-input> -->
       </el-form-item>
 
-      <el-form-item label="Category" prop="category">
+      <!-- <el-form-item label="Category" prop="category">
         <el-input v-model="editingRow.category"></el-input>
-      </el-form-item>
+      </el-form-item> -->
 
       <el-form-item label="BPO_NO" prop="bpo_no">
         <el-input v-model="editingRow.bpo_no"></el-input>
@@ -128,9 +128,9 @@ export default {
             { required: true, message: '请输入 Color_Combo', trigger: 'blur' },
             { validator: validate_Combo, trigger: 'blur' }
         ],
-        category: [
-            { required: true, message: '请输入 Category', trigger: 'blur' }
-        ],
+        // category: [
+        //     { required: true, message: '请输入 Category', trigger: 'blur' }
+        // ],
         bpo_no: [
             { required: true, message: '请输入 BPO_NO', trigger: 'blur' }
         ],
@@ -224,6 +224,9 @@ export default {
      */
     getSizes(){
       let customer_code = this.customer_code;
+      if(!customer_code){
+        return false;
+      }
       myCache.do('getSizes:'+customer_code,[assistAPI.getSizes,{customer_code}],600).then(res=>{
         let sizeFields = [];
         for(let i in res){
