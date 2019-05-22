@@ -1,6 +1,6 @@
 <template>
   <div class="navbar">
-    <!-- <hamburger :is-active="sidebar.opened" class="hamburger-container" @toggleClick="toggleSideBar" /> -->
+    <hamburger :is-active="sidebar.opened" class="hamburger-container" @toggleClick="toggleSideBar" />
 
     <breadcrumb class="breadcrumb-container" />
 
@@ -21,11 +21,11 @@
           <span class="username">{{userData.full_name}}</span> <i class="el-icon-caret-bottom" />
         </div>
         <el-dropdown-menu slot="dropdown">
-          <a target="_blank" href="/">
+          <router-link :to="{path: '/user_setting'}">
             <el-dropdown-item>
-             <i class="el-icon-setting"></i> {{ $t('navbar.setting') }}
-            </el-dropdown-item>
-          </a>
+              <i class="el-icon-setting"></i> {{ $t('navbar.setting') }}
+            </el-dropdown-item> 
+          </router-link>
           <el-dropdown-item divided>
             <span style="display:block;" @click="logout">
               <svg-icon icon-class="signout"  class="font-icon" />  {{ $t('navbar.logOut') }}
@@ -61,7 +61,10 @@ export default {
       'name',
       'avatar',
       'userData'
-    ])
+    ]),
+    device() {
+      return this.$store.state.app.device
+    }
   },
   methods: {
     toggleSideBar() {

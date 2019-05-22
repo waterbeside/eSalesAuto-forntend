@@ -1,7 +1,7 @@
 <template>
   <div class="tags-view-container">
     <scroll-pane ref="scrollPane" class="tags-view-wrapper">
-       <hamburger :is-active="sidebar.opened" class="hamburger-container" @toggleClick="toggleSideBar"  />
+       <!-- <hamburger :is-active="sidebar.opened" class="hamburger-container" @toggleClick="toggleSideBar"  /> -->
 
       <router-link
         v-for="tag in visitedViews"
