@@ -4,5 +4,11 @@ export default {
   },
   login: {
     title: 'Login'
+  },
+  tagsView: {
+    refresh:'Refresh',
+    close:'Close',
+    closeOthers:'Close others',
+    closeAll:'Close all',
   }
 }
