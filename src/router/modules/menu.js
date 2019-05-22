@@ -117,7 +117,17 @@ export default [
       title: 'Master Center',
       icon: 'admin'
     },
-    children: [{
+    children: [
+    {
+      path: 'user',
+      component: () => import('@/views/user/index'),
+      name: 'userList',
+      meta: {
+        title: '用户管理',
+        icon: 'user'
+      },
+     
+    },{
       path: 'fabric',
       // component: one,
       name: 'fabric',
