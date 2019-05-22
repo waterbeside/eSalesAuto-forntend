@@ -63,6 +63,7 @@
 </template>
 
 <script>
+import md5 from 'js-md5'
 import { validUsername } from '@/utils/validate'
 import LangSelect from '@/components/LangSelect'
 // import SocialSign from './socialsignin'
@@ -136,7 +137,11 @@ export default {
       this.$refs.loginForm.validate(valid => {
         if (valid) {
           this.loading = true
-          this.$store.dispatch('user/login', this.loginForm)
+          let data = {
+            ...this.loginForm,
+          }
+          data.password = md5(this.loginForm.password)
+          this.$store.dispatch('user/login', data)
             .then(() => {
               this.$router.push({ path: this.redirect || '/' })
               this.loading = false

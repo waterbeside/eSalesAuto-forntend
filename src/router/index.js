@@ -68,15 +68,15 @@ export const constantRoutes = [
     path: '',
     component: Layout,
     redirect: '/development/auto_sppo',
-    // children: [
-    //   {
-    //     path: 'welcome',
-    //     component: () => import('@/views/welcome/index'),
-    //     name: 'welcome',
-    //     meta: { title: 'welcome', icon: 'dashboard', noCache: true, affix: true },
-    //     top:true,
-    //   }
-    // ]
+    children: [
+      {
+        path: 'user_setting',
+        component: () => import('@/views/user/setting'),
+        name: 'user_setting',
+        meta: { title: '用户设置', icon: 'dashboard', noCache: true },
+        hidden:true,
+      }
+    ]
   },
   
 ]
