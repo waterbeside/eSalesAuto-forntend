@@ -43,7 +43,7 @@
         </el-col>
       </el-form-item>
       <el-form-item label="Quantity"  prop="Qty">
-        <el-input v-model.number="editingRow.Qty" ></el-input>
+        <el-input v-model.number="editingRow.Qty" type="number" ></el-input>
       </el-form-item>
        
       <el-form-item label="Remark" prop="Remark">
@@ -51,10 +51,9 @@
       </el-form-item>
       
     </el-form>
-    <div  slot="footer"  class="dialog-footer">
-      <el-button @click="handleCancel">Cancel</el-button>
-      <el-button type="primary" @click="handleOK">OK</el-button>
-    </div>
+    
+    <dialog-foot-btns slot="footer"  class="dialog-footer" @cancel="handleCancel" @ok="handleOK" okText="确定" ></dialog-foot-btns>
+
   </el-dialog>
 </template>
 
@@ -63,8 +62,11 @@ const _ = require('lodash');
 import { myCache } from '@/utils/common'
 import { checkColorCombo,checkCollarCuffSize } from '@/utils/validate'
 import {sppoAPI,assistAPI} from '@/api'
+import DialogFootBtns from '@/components/DialogFootBtns'
+
 
 export default {
+  components: { DialogFootBtns },
   props: {
     data:null,
     visible:false,
@@ -222,7 +224,7 @@ export default {
           }else{
             this.editingRow.Collar_Cuff_Size = '';
           }
-          this.$emit('OK',this.editingRow);
+          this.$emit('ok',this.editingRow);
           this.handleClose();
         } else {
           return false;

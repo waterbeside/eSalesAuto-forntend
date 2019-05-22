@@ -123,7 +123,7 @@
 
 
     <!--编辑单项界面-->
-    <edit-excel-item @close="handleCancelEdit" @OK="handleConfirmEdit" :data="editingRow"  :visible.sync="is_showEditItem"  :customerCode="formData.customer_code"/>
+    <edit-excel-item @close="handleCancelEdit" @ok="handleConfirmEdit" :data="editingRow"  :visible.sync="is_showEditItem"  :customerCode="formData.customer_code"/>
     
   </div>
 </template>
@@ -141,7 +141,6 @@ import { checkGoCombo,checkMustSame } from '@/utils/validate'
 
 
 export default {
-  name: 'RightPanel',
   components: { UploadExcelComponent,EditExcelItem },
   props: {
    
@@ -619,7 +618,7 @@ export default {
         callback:()=>{
           this.handleCloseDialog();
           this.handleClearTableData();
-          this.$emit('OK');
+          this.$emit('ok');
         }
       })
     },

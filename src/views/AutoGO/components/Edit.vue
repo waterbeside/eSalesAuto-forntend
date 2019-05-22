@@ -106,12 +106,11 @@
       
   </el-form>
 
-  <div  class="dialog-footer" style="text-align:right; margin-top:40px;">
-    <el-button @click="handleCloseDialog">取消</el-button>
-    <el-button @click="handleOK" type="primary"   :loading="is_submiting" :disabled="is_submiting" >提交</el-button>
-  </div>
+  
+  <dialog-foot-btns class="mt" @cancel="handleCloseDialog" @ok="handleOK" :submiting='is_submiting'></dialog-foot-btns>
+
   <!--编辑单项界面-->
-  <edit-edit-item @close="handleCancelTableEdit" @OK="handleConfirmTableEdit" :data="editingRow" :extraData="extraData" :index="editingRow_index"  :visible.sync="is_showEditItem" />
+  <edit-edit-item @close="handleCancelTableEdit" @ok="handleConfirmTableEdit" :data="editingRow" :extraData="extraData" :index="editingRow_index"  :visible.sync="is_showEditItem" />
 
 </div>
 
@@ -124,10 +123,10 @@ import { changeCaseJsonKey,deepCopy } from '@/utils/common'
 import { checkDelivery } from '@/utils/validate'
 import moment from 'moment'
 import EditEditItem from './EditEditItem'
-import { setTimeout } from 'timers';
+import DialogFootBtns from '@/components/DialogFootBtns'
 
 export default {
-  components: { EditEditItem },
+  components: { EditEditItem,DialogFootBtns },
   props: {
     data:null,
     visible:false,
@@ -396,7 +395,7 @@ export default {
       this.$alert('提交成功', {confirmButtonText: 'OK',
         type:'success',
         callback:()=>{
-          this.$emit('OK',data);
+          this.$emit('ok',data);
           this.handleCloseDialog();
         }
       })

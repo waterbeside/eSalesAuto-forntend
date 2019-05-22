@@ -75,17 +75,17 @@
 
     <!--编辑界面-->
     <el-dialog title="编辑" :visible.sync="is_editFormVisible" width="80%" :before-close="handleCloseEditDialog" :close-on-click-modal="false">
-      <edit-view   ref="myEditBox" @OK="handleEditSuccess" @close="handleCloseEditDialog" :data="editingRow" />     
+      <edit-view   ref="myEditBox" @ok="handleEditSuccess" @close="handleCloseEditDialog" :data="editingRow" />     
     </el-dialog>
 
     <!--新增界面-->
 		<el-dialog title="添加SPPO"  :visible.sync="is_addFormVisible"  width="80%" :before-close="handleBeforeCloseAddDialog" :close-on-click-modal="false" >
-      <add-view ref="myAddBox" @OK="handleAddSuccess"  @close="handleCloseAddDialog" />
+      <add-view ref="myAddBox" @ok="handleAddSuccess"  @close="handleCloseAddDialog" />
     </el-dialog>
 
     <!-- 批量更新界面 -->
     <el-dialog title="批量编辑" :visible.sync="is_batcheditFormVisible" width="500" :close-on-click-modal="false" >
-      <edit-batch-view ref="myBathEditBox" @OK="handleEditBathSuccess"  @close="handleCloseEditBatchDialog" :data="multipleSelection" />
+      <edit-batch-view ref="myBathEditBox" @ok="handleEditBathSuccess"  @close="handleCloseEditBatchDialog" :data="multipleSelection" />
     </el-dialog>
       <router-view > </router-view>
 

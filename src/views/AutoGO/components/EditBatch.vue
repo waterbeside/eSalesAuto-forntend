@@ -30,10 +30,10 @@
     </el-form-item>
   </el-form>
 
-  <div  class="dialog-footer" style="text-align:right; margin-top:40px;">
-    <el-button @click="handleCloseDialog">取消</el-button>
-    <el-button @click="handleOK" type="primary"   :loading="is_submiting" :disabled="is_submiting" >提交</el-button>
-  </div>
+ 
+
+  <dialog-foot-btns class="mt" @cancel="handleCloseDialog" @ok="handleOK" :submiting='is_submiting'></dialog-foot-btns>
+
 </div>
 	 
 
@@ -43,8 +43,10 @@
 <script>
 
 import {goAPI,assistAPI} from '@/api'
+import DialogFootBtns from '@/components/DialogFootBtns'
 
 export default {
+  components: { DialogFootBtns },
   props: {
     data:null,
     visible:false,
@@ -155,7 +157,7 @@ export default {
             goAPI.batchEdit(data).then(res=>{
                 console.log(res);
                 if(res.code===0){
-                  this.$emit('OK',this.formData);
+                  this.$emit('ok',this.formData);
                   this.handleCloseDialog();
                 }
                 this.is_submiting = false;

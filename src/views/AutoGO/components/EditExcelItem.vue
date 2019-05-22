@@ -74,10 +74,9 @@
       </el-form-item>
       
     </el-form>
-    <div  slot="footer"  class="dialog-footer">
-      <el-button @click="handleCancel">Cancel</el-button>
-      <el-button type="primary" @click="handleOK">OK</el-button>
-    </div>
+
+    <dialog-foot-btns slot="footer"  class="dialog-footer"  @cancel="handleCancel" @ok="handleOK" okText="确定" ></dialog-foot-btns>
+
   </el-dialog>
 
   
@@ -88,9 +87,11 @@ import { myCache } from '@/utils/common';
 import { checkGoCombo } from '@/utils/validate'
 import {sppoAPI,assistAPI} from '@/api';
 import moment from 'moment'
-import { parse } from 'path';
+import DialogFootBtns from '@/components/DialogFootBtns'
+
 
 export default {
+  components: { DialogFootBtns },
   props: {
     data:null,
     visible:false,
@@ -291,7 +292,7 @@ export default {
           this.editingRow.total_qty = this.total_qty;
           this.editingRow.sku = this.sku;
           console.log(this.editingRow.pdo_date)
-          this.$emit('OK',this.editingRow);
+          this.$emit('ok',this.editingRow);
           this.handleClose();
         }else{
           let errorMsg = '填写有误，请检查后再保存';

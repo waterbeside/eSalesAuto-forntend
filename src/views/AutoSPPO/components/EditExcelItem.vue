@@ -66,10 +66,9 @@
       </el-form-item>
       
     </el-form>
-    <div  slot="footer"  class="dialog-footer">
-      <el-button @click="handleCancel">Cancel</el-button>
-      <el-button type="primary" @click="handleOK">OK</el-button>
-    </div>
+
+    <dialog-foot-btns slot="footer"  class="dialog-footer"  @cancel="handleCancel" @ok="handleOK" okText="确定" ></dialog-foot-btns>
+
   </el-dialog>
 
   
@@ -79,7 +78,10 @@
 import { myCache } from '@/utils/common'
 import { checkColorCombo,checkCollarCuffSize } from '@/utils/validate'
 import {sppoAPI,assistAPI} from '@/api'
+import DialogFootBtns from '@/components/DialogFootBtns'
+
 export default {
+  components: { DialogFootBtns },
   props: {
     data:null,
     visible:false,
@@ -257,7 +259,7 @@ export default {
           }else{
             this.editingRow.collar_cuff_size = '';
           }
-          this.$emit('OK',this.editingRow);
+          this.$emit('ok',this.editingRow);
           this.handleClose();
         }else{
           return false;
