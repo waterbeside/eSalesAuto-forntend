@@ -61,7 +61,7 @@ export function userDetail(id,params) {
 export function userUpdate(id,data) {
   return request({
     url: settings.apiBaseUrl+'/api/v1/user/'+id,
-    method: 'put',
+    method: 'patch',
     data
   })
 }
@@ -69,7 +69,7 @@ export function userUpdate(id,data) {
 /**
  * 新增用户
  */
-export function userAdd(data) {
+export function userCreate(data) {
   return request({
     url: settings.apiBaseUrl+'/api/v1/user',
     method: 'post',
@@ -89,3 +89,16 @@ export function userDelete(data) {
     data
   })
 }
+
+/**
+ * 验证用户名是否唯一
+ */
+export function checkUserUnique(params) {
+  return request({
+    url: settings.apiBaseUrl+'/api/v1/user/check_unique',
+    method: 'get',
+    params
+  })
+}
+
+
