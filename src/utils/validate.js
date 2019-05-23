@@ -11,10 +11,17 @@ export function isExternal(path) {
   return /^(https?:|mailto:|tel:)/.test(path)
 }
 
-export function validUsername(str) {
+export function validNoSpaces(str) {
+  if(str.indexOf(" ") >=0){
+    return false;
+  }
   return true;
-  // const valid_map = ['admin', 'editor']
-  // return valid_map.indexOf(str.trim()) >= 0
+}
+
+export function validNoSpecialBut_(str) {
+  const reg =  /^[a-zA-Z0-9_]{1,}$/
+  console.log(str)
+  return reg.test(str)
 }
 
 export function validURL(url) {

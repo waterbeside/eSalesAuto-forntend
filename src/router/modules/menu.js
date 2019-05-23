@@ -17,14 +17,7 @@ export default [
         path: 'auto_sppo',
         component: () => import('@/views/AutoSPPO'),
         name: 'autoSppo',
-        meta: { title: 'Auto SPPO' , icon: 'fabric',},
-        // children:[{
-        //   path:'edit',
-        //   name: 'editAutoSppo',
-        //   component: () => import('@/views/AutoSPPO/edit'),
-        //   hidden:true
-        // }]
-
+        meta: { title: 'Auto SPPO' , icon: 'fabric', roles: ['master','general']},
     }, 
     // {
     //   path: 'auto_sppo2',
@@ -47,14 +40,8 @@ export default [
           path: 'auto_go',
           component: () => import('@/views/AutoGO'),
           name: 'autoGo',
-          meta: { title: 'Auto GO',icon: 'order'}
-      }, 
-      // {
-      //   path: 'auto_sppo2',
-      //   component: () => import('@/views/AutoSPPO'),
-      //   name: 'AutoSppo2',
-      //   meta: { title: 'Auto SPPO' }
-      // }, 
+          meta: { title: 'Auto GO',icon: 'order', roles: ['master','general']}
+        }, 
       ]},
 
 
@@ -124,7 +111,8 @@ export default [
       name: 'userList',
       meta: {
         title: '用户管理',
-        icon: 'user'
+        icon: 'user',
+        roles: ['master']
       },
      
     },{
@@ -133,7 +121,8 @@ export default [
       name: 'fabric',
       meta: {
         title: 'Fabric',
-        icon: 'fabric'
+        icon: 'fabric',
+        roles: ['master']
       },
     },{
       path: 'color',
@@ -141,7 +130,8 @@ export default [
       name: 'color',
       meta: {
         title: 'Color',
-        icon: 'color'
+        icon: 'color',
+        roles: ['master']
       },
     },{
       path: 'quantity',
@@ -149,14 +139,17 @@ export default [
       name: 'quantity',
       meta: {
         title: 'Quantity',
-        icon: 'quantity'
+        icon: 'quantity',
+        roles: ['master']
+
       },
     },{
       path: 'destination',
       // component: one,
       name: 'destination',
       meta: {
-      title: 'Destination',
+        title: 'Destination',
+        roles: ['master']
         //icon: 'edit'
       },
     },{
@@ -164,16 +157,16 @@ export default [
       // component: one,
       name: 'sample_request',
       meta: {
-      title: 'Sample Request',
-        //icon: 'edit'
+        title: 'Sample Request',
+        roles: ['master']
       },
     },{
       path: 'customer_manuel',
       // component: one,
       name: 'customer_manuel',
       meta: {
-      title: 'Customer Manuel',
-        //icon: 'edit'
+        title: 'Customer Manuel',
+        roles: ['master']
       },
     }]
   },

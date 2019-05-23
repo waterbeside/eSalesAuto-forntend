@@ -55,6 +55,11 @@ export const constantRoutes = [
     hidden: true
   },
   {
+    path: '/auth-redirect',
+    component: () => import('@/views/login/authredirect'),
+    hidden: true
+  },
+  {
     path: '/404',
     component: () => import('@/views/errorPage/404'),
     hidden: true
@@ -86,51 +91,13 @@ export const constantRoutes = [
  * the routes that need to be dynamically loaded based on user roles
 */
 export const asyncRoutes = [
-  // {
-  //   path: '/permission',
-  //   component: Layout,
-  //   redirect: '/permission/index',
-  //   alwaysShow: true, // will always show the root menu
-  //   meta: {
-  //     title: 'permission',
-  //     icon: 'lock',
-  //     roles: ['admin', 'editor'] // you can set roles in root nav
-  //   },
-  //   children: [
-  //     // {
-  //     //   path: 'page',
-  //     //   component: () => import('@/views/permission/page'),
-  //     //   name: 'PagePermission',
-  //     //   meta: {
-  //     //     title: 'pagePermission',
-  //     //     roles: ['admin'] // or you can only set roles in sub nav
-  //     //   }
-  //     // },
-  //     // {
-  //     //   path: 'directive',
-  //     //   component: () => import('@/views/permission/directive'),
-  //     //   name: 'DirectivePermission',
-  //     //   meta: {
-  //     //     title: 'directivePermission'
-  //     //     // if do not set roles, means: this page does not require permission
-  //     //   }
-  //     // },
-  //     // {
-  //     //   path: 'role',
-  //     //   component: () => import('@/views/permission/role'),
-  //     //   name: 'RolePermission',
-  //     //   meta: {
-  //     //     title: 'rolePermission',
-  //     //     roles: ['admin']
-  //     //   }
-  //     // }
-  //   ]
-  // },
-
   
-
   /** when your routing map is too long, you can split it into small modules **/
   ...menuRouter,
+  {
+    path: '*',
+    redirect: '/404',
+  },
 
 
 ]
