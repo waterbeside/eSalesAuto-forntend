@@ -5,7 +5,18 @@
     <el-col :span="24" class="toolbar" style="padding-bottom: 0px;">
       <el-form :inline="true" :model="filters">
         <el-form-item label="">
-          <el-input placeholder="Name of keyword" v-model="filters.keyword"></el-input>
+          <el-input placeholder="Keyword" v-model="filters.keyword"></el-input>
+        </el-form-item>
+        <el-form-item label="" prop="role">
+          <el-select v-model="filters.role" placeholder="角色">
+            <el-option
+              v-for="item in selectBoxData.roles"
+              :key="item.value"
+              :label="item.label"
+              :value="item.value"
+              :disabled="item.disabled">
+            </el-option>
+          </el-select>
         </el-form-item>
         <el-form-item label="加入日期">
             <el-date-picker
@@ -72,9 +83,9 @@
 
   
 
-    <!--新增界面-->
+    <!--新增和编辑界面-->
 		<el-dialog :title="form_dialogTitle"  :visible.sync="is_showEditBox"    :close-on-click-modal="false" >
-      <user-form ref="editUserForm" @OK="handleEditSuccess"  @close="handleCloseEditDialog" :id="editing_id"  v-if="is_showEditBox"/>
+      <user-form ref="editUserForm" @ok="handleEditSuccess"  @close="handleCloseEditDialog" :id="editing_id"  v-if="is_showEditBox"/>
     </el-dialog>
 
     
@@ -85,12 +96,15 @@
 <script>
   import moment from 'moment'
   import NProgress from 'nprogress'
+  import {myCache} from '@/utils/common'
+  import { getRoleSelects } from '@/api/role'
   import { getList,userDelete } from '@/api/user'
   import UserForm from './components/Form'
 
   export default {
     name: 'userList',
     components: { UserForm},
+    
     data() {
       return {
         filters: {
@@ -110,7 +124,10 @@
         listData: [],
 
         editing_id: 0,
-        form_is_edit: false,
+
+        selectBoxData:{
+          roles:[],
+        },
     
 
       };
@@ -144,10 +161,33 @@
         this.multipleSelection = val;
         console.log(this.multipleSelection );
       },
-      //获取列表内容
+      /**
+       * 取得角色
+       */
+      getRoleSelects(){
+        myCache.do('role:selects',[getRoleSelects,null,'data.list'],600).then(res=>{
+          let roles = [{
+              label:'不限角色',
+              value:''
+          }];
+          res.forEach(item => {
+            roles.push({
+              label:item.title,
+              value:item.name,
+            })
+          });
+          this.selectBoxData.roles = roles;
+        }).catch(error=>{
+          console.log(error)
+        });
+      },
+      /**
+       * 取得列表数据
+       */
       getList() {
         let param = {
           page: this.page,
+          role: this.filters.role,
           keyword: this.filters.keyword,
         };
         //处理时间
@@ -184,14 +224,17 @@
         // this.is_refresh = false;
 
       },
-      //删除
-      handleDel(index, row) {
+
+      /**
+       * 删除
+       */
+      handleDel(id) {
         this.$confirm("确认删除该记录吗?", "提示", {
           type: "warning"
         }).then(() => {
           this.listLoading = true;
           //NProgress.start();
-          let datas = { id: row.ID };
+          let datas = {id};
           userDelete(datas).then(res => {
             this.listLoading = false;
             //NProgress.done();
@@ -208,7 +251,7 @@
       },
       //批量删除
       handleBatchDelete(){
-        var ids = this.multipleSelection.map(item => item.ID).toString();
+        var ids = this.multipleSelection.map(item => item.id).toString();
         this.$confirm("确认删除选中记录吗？", "提示", {
           type: "warning"
         })
@@ -244,6 +287,19 @@
         this.is_showEditBox = false;
       },
       handleEditSuccess(){
+        if(this.editing_id > 0){
+          this.editing_id = 0;
+        }else{
+          this.page = 1;
+          this.filters= {
+            keyword: "",
+            date_range:[],
+          };
+        }
+        
+        this.getList();
+        this.is_showEditBox = false;
+
 
       },
 
@@ -253,6 +309,7 @@
     mounted() {
     },
     created () {
+      this.getRoleSelects();
       this.getList();
     },
     activated() {
