@@ -33,6 +33,18 @@ export function logout() {
   })
 }
 
+
+/**
+ * 更新密码
+ */
+export function changeMyPass(data) {
+  return request({
+    url: settings.apiBaseUrl+'/api/v1/passport/change_pass',
+    method: 'patch',
+    data
+  })
+}
+
 /**
  * 取得用户列表
  */
