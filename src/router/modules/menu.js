@@ -102,7 +102,8 @@ export default [
     component: Layout,
     meta: {
       title: 'Master Center',
-      icon: 'admin'
+      icon: 'admin',
+      roles: ['master']
     },
     children: [
     {
