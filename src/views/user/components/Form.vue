@@ -103,7 +103,7 @@ export default {
       }
     };
     var validatePass2 = (rule, value, callback) => {
-      if(this.id > 0 && this.formData.pass!==''){
+      if(this.formData.pass!==''){
         if (value === '') {
           callback(new Error('请再次输入密码'));
         } else if (value !== this.formData.pass) {
@@ -253,7 +253,6 @@ export default {
       }).catch(error=>{
         this.handleClose()
         this.is_loading = false;
-
       })
     },
 
