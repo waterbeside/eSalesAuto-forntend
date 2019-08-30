@@ -7,7 +7,7 @@ import settings from '@/settings.js'
  */
 export function login(data) {
   return request({
-    url: settings.apiBaseUrl+'/api/v1/passport/login',
+    url: settings.apiBaseUrl+'/api/v2/passport/login',
     method: 'post',
     data
   })
