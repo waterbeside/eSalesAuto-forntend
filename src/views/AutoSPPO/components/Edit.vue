@@ -111,11 +111,11 @@ export default {
   },
   data() {
     var validate_Delivery =  (rule, value, callback) => {
-       if(checkDelivery(value)){
-         callback()
-       }else{
-         callback(new Error('Delivery 交期必须在今天之后'))
-       }
+      if(checkDelivery(value)){
+        callback()
+      }else{
+        callback(new Error('Delivery 交期必须在今天之后'))
+      }
     };
     return {
       is_loadingData:false,
