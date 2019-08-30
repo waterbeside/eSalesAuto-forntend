@@ -32,7 +32,7 @@ export function getDetail(params) {
  */
 export function add(data) {
   return request({
-    url: settings.apiBaseUrl+'/api/v1/sppo',
+    url: settings.apiBaseUrl+'/api/v2/sppo',
     method: 'post',
     data
   })
