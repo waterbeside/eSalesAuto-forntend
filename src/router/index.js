@@ -72,7 +72,7 @@ export const constantRoutes = [
   {
     path: '',
     component: Layout,
-    redirect: '/development/auto_sppo',
+    redirect: '/development/auto_sppo_test',
     children: [
       {
         path: 'user_setting',
@@ -85,7 +85,7 @@ export const constantRoutes = [
   },
   
 ]
-  
+
 /**
  * asyncRoutes
  * the routes that need to be dynamically loaded based on user roles
