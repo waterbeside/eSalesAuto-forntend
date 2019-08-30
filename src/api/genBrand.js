@@ -10,4 +10,13 @@ export function getBrandCode(params) {
 }
 
 
+export function getBrandLabel(params) {
+  return request({
+    url: settings.apiBaseUrl+'/api/v1/gen_brand/get_label',
+    method: 'get',
+    params
+  })
+}
+
+
 

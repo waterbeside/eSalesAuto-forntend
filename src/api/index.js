@@ -9,7 +9,7 @@ import { getList as goGetList,
          edit as goEdit
         } from '@/api/go'
 
-import {getBrandCode} from '@/api/genBrand'
+import {getBrandCode, getBrandLabel} from '@/api/genBrand'
 import {getFactoryIds} from '@/api/genFactory'
 import {checkFabricTypeExist} from '@/api/fabFabric'
 import {checkWashTypeExist,getWashTypes} from '@/api/genWash'
@@ -32,6 +32,7 @@ export let goAPI =  {
 }
 export let assistAPI =  { 
     getBrandCode,
+    getBrandLabel,
     getFactoryIds,
     getWashTypes,
     checkFabricTypeExist,
@@ -43,5 +44,3 @@ export let assistAPI =  {
     fabLnGetCustomerFabCodes,
 
 }
-
- 
