@@ -21,7 +21,7 @@ module.exports = {
   // sub-path here. For example, if your app is deployed at
   // https://www.foobar.com/my-app/
   // then change this to '/my-app/'
-  baseUrl: BASE_URL,
+  publicPath: BASE_URL,
 
   // tweak internal webpack configuration.
   // see https://github.com/vuejs/vue-cli/blob/dev/docs/webpack.md
@@ -49,5 +49,15 @@ module.exports = {
       .end()
   },
 
+
+  devServer: {
+    proxy: {
+      '/': {
+        ws: false, // proxy websockets
+        target: 'http://127.0.0.1',
+      }
+    }
+  },
+  
   lintOnSave: false
 }
