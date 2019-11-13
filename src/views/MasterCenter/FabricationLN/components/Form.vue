@@ -28,9 +28,11 @@
 
 import * as fabApi from '@/api/masterFabricationLN'
 import DialogFootBtns from '@/components/DialogFootBtns'
+import editForm from '@/mixin/editForm';
 
 export default {
   components: { DialogFootBtns},
+  mixins: [editForm],
   props: {
     id:0,
   },
@@ -67,41 +69,11 @@ export default {
       }
     }
     return {
-      formData:{},
-      errorFields:[],
-      selectBoxData:{},
-      is_loading: false,
-      is_submiting: false,
       fields,
       rules,
     }
   },
-  watch:{
-    is_submiting(val){
-      if(val){
-        this.loadingObj = this.$loading()
-      }else{
-        this.loadingObj.close();
-      }
-    },
-    id(val){
-      
-    }
-  },
-  computed: {
-
-  },
-
-
   methods: {
-    init(){
-      console.log('id')
-      console.log(this.id);
-      if(this.id > 0){
-        this.getDetail()
-      }
-    },
-
     getDetail(){
       this.is_loading = true;
       fabApi.getDetail(this.id).then(res=>{
@@ -115,50 +87,6 @@ export default {
         // this.handleClose()
         this.alertClose('查询失败');
         this.is_loading = false;
-      })
-    },
-
-    alertClose(msg,type='warning'){
-      this.$alert(msg, {confirmButtonText: 'OK',
-        type,
-        callback:()=>{
-          this.$emit('close');
-        }
-      })
-    },
-
-    handleClose(){
-      this.$emit('close');
-    },
-    handleOK(){
-      let $form = this.$refs.detailForm;
-      $form.validate((valid) => {
-        console.log($form.fields);
-        if (valid) {
-          this.errorFields = [];
-          let formData = this.formData;
-          let data = formData
-          this.is_submiting = true;
-          this.doSubmit(data).then(res=>{
-            if(res.code === 0 ){
-              this.$alert('保存成功', {confirmButtonText: 'OK',
-                type:'success',
-                callback:()=>{
-                  this.$emit('ok');
-                }
-              })
-            }
-            this.is_submiting = false;
-          }).catch(err=>{
-            $form.clearValidate();
-            this.is_submiting = false;
-            if(typeof(err.data)!="undefined" && typeof(err.data.errorFields)!="undefined" && _.isObject(err.data.errorFields)){
-              this.errorFields = err.data.errorFields;
-            }
-          })
-          
-
-        }
       })
     },
     doSubmit(data){
