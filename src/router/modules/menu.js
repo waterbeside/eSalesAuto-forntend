@@ -133,8 +133,8 @@ export default [{
 
     }, {
       path: 'fabric',
-      // component: one,
-      name: 'fabric',
+      component: () => import('@/views/MasterCenter/FabricationLN'),
+      name: 'FabricationLN',
       meta: {
         title: 'Fabric',
         icon: 'fabric',

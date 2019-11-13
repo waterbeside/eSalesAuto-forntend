@@ -68,7 +68,7 @@ export function userDetail(id,params) {
 }
 
 /**
- * 取得用户详情
+ * 更新用户详情
  */
 export function userUpdate(id,data) {
   return request({

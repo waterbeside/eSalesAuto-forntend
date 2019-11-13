@@ -8,7 +8,7 @@ import settings from '@/settings.js'
  */
 export function getList(params) {
   return request({
-    url: settings.apiBaseUrl+'/api/v1/sppo',
+    url: settings.apiBaseUrl+'/api/v2/sppo',
     method: 'get',
     params
   })
