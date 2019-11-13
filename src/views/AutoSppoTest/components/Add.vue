@@ -374,8 +374,8 @@ export default {
         if(typeof(newItem.remark)=="undefined"){ 
           newItem.remark = '';
         }
-        if(typeof(newItem.collar_cuff_size)=="undefined"){ 
-          newItem.collar_cuff_size = '';
+        if(typeof(newItem.size)=="undefined"){ 
+          newItem.size = '';
         }
         this.errorMsg[index] = {}; //用于检查后存放的错误信息
         this.errorRow.push(index); //用于检查是否可按提交按钮
