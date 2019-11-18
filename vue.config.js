@@ -51,6 +51,7 @@ module.exports = {
 
 
   devServer: {
+    port: 8014,
     proxy: {
       '/': {
         ws: false, // proxy websockets

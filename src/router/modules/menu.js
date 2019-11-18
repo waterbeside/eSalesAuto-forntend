@@ -12,24 +12,24 @@ export default [{
     },
     children: [{
         path: 'auto_sppo',
-        component: () => import('@/views/AutoSPPO'),
+        component: () => import('@/views/AutoSppo'),
         name: 'autoSppo',
         meta: {
           title: 'Auto SPPO',
           icon: 'fabric',
           roles: ['master', 'general']
         },
-        hidden:true,
       },
       {
         path: 'auto_sppo_test',
-        component: () => import('@/views/AutoSppoTest'),
+        component: () => import('@/views/AutoSppo_old'),
         name: 'autoSppoTest',
         meta: {
           title: 'Auto SPPO',
           icon: 'fabric',
           roles: ['master', 'general']
         },
+        hidden:true,
       },
       // {
       //   path: 'auto_sppo2',

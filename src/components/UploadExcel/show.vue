@@ -23,7 +23,7 @@
           </div>
         </el-table-column>
 
-        <el-table-column   label="操作" width="170" fixed="right"  >
+        <el-table-column   label="操作" width="170" fixed="right" v-if="is_showOption" >
           <div slot-scope="scope" >
             <template v-if="scope.$index === editingRowIndex">
               正在编辑...
@@ -67,6 +67,9 @@ export default {
     errorMsg:Array,
     editingRowIndex: {
       defautlt:-1
+    },
+    is_showOption: {
+      defautlt:false
     },
   },
   data() {
