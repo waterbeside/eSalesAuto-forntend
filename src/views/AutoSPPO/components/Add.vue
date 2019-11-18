@@ -12,9 +12,20 @@
             :disabled="item.disabled">
           </el-option>
         </el-select>
+
         <el-select v-model="formData.brand" placeholder="Brand">
           <el-option
             v-for="item in selectBoxData.brand"
+            :key="item.value"
+            :label="item.label"
+            :value="item.value"
+            :disabled="item.disabled">
+          </el-option>
+        </el-select>
+
+        <el-select v-model="formData.brand_lable_cd" placeholder="Label">
+          <el-option
+            v-for="item in selectBoxData.brand_lable_cd"
             :key="item.value"
             :label="item.label"
             :value="item.value"
@@ -31,22 +42,21 @@
             :disabled="item.disabled">
           </el-option>
         </el-select>
+        
       </div>
-      
 
-      
-     
+
       <!-- 上传excel -->
-      <upload-excel-component :on-success="handleSuccess" :before-upload="beforeUpload" v-show="!is_hasUploadExcel" class="upload-box" />
+      <upload-excel-component :on-success="loadExcelSuccess" :before-upload="beforeUpload" v-show="!is_hasUploadExcel" class="upload-box" />
 
       <!-- 提示 -->
-      <el-alert   type="warning"  :closable="false" style="margin-bottom:12px;"> 
+      <!-- <el-alert   type="warning"  :closable="false" style="margin-bottom:12px;"> 
         <h3><i class="el-icon-warning"></i> 注意</h3>
         <div style="font-size:14px">
           <p >1、如果以前提交过相同的Style_NO数据，本次操作将会视作修改数据</p>
           <p >2、提交前请点击"检查格式"</p>
         </div>
-      </el-alert>
+      </el-alert> -->
 
       <!-- 提示：上传excel后 -->
       <el-alert :title="'本次上传Excel的时间为:'+uploadExcelTime"  type="success" :closable="false" v-show="is_hasUploadExcel" style="margin-bottom:4px">  </el-alert>
@@ -56,58 +66,19 @@
         <i class="el-icon-loading" v-show="is_checkingAll"></i> {{tips}}
       </el-alert>
       
-      <!-- table列表 -->
-      <el-table v-loading="is_listLoading" :data="tableData" border style:="width: 100%" v-show="is_hasUploadExcel"  @sort-change="sortChange">
-        <el-table-column v-for="fieldItem of tableFields" 
-          :key="fieldItem.name" 
-          :prop="fieldItem.name" 
-          :label="fieldItem.label"  
-          :width="fieldItem.width" 
-          :min-width="fieldItem.minWidth"
-          :fixed="fieldItem.fixed ? fieldItem.fixed : false"  >
-          <div slot-scope="scope" :class="scope.row.error.includes(fieldItem.name) ? 'column-error':''" :title="fieldItem.label">
-            <el-tooltip class="item" effect="dark" placement="top" 
-              :content="typeof(errorMsg[scope.$index][fieldItem.name])!='undefined' ? errorMsg[scope.$index][fieldItem.name] : '格式不正确'" 
-              v-show="scope.row.error.includes(fieldItem.name) ? true : false">
-              <i class="el-icon-warning" />
-            </el-tooltip>
-             <el-tooltip  effect="dark" placement="top"  :content="typeof(errorMsg[scope.$index][fieldItem.name])!='undefined' ? errorMsg[scope.$index][fieldItem.name] : fieldItem.label" v-show="true">
-              <span>{{scope.row[fieldItem.name]}}</span>
-            </el-tooltip>
-          </div>
-        </el-table-column>
+      <excel-show
+        :data="tableData"
+        :fields="tableFields"
+        :errorMsg="errorMsg"
+        :checkingRow="checkingRow"
+        :editingRowIndex="editingRow_index"
+        @checkTableItem="checkTableItem"
+        @editTableItem="handleEditTableItem"
+        v-loading="is_listLoading"
+        v-show="is_hasUploadExcel"
+      ></excel-show>
 
-        <el-table-column   label="操作" width="170" fixed="right"  >
-          <div slot-scope="scope" >
-            <template v-if="scope.$index === editingRow_index">
-              正在编辑...
-            </template>
-            <template v-else-if="scope.row.uploadSuccess">
-              <span style="color:#30B08F"><i class="el-icon-check"></i> 上传成功</span>
-            </template>
-            <template v-else>
-              <el-button @click="handleEditTableItem(scope)" type="primary" size="mini" icon="el-icon-edit"></el-button>
-              <template v-if="checkingRow.has(scope.$index)">
-                <el-button  :disabled="true" size="mini" plain 
-                  :type="checkBtnStyle[2] ? checkBtnStyle[2] : 'default'" 
-                  :loading="true" 
-                  :icon="checkBtnIcon[2] ? checkBtnIcon[2] : ''" >
-                  检验
-                </el-button>
-              </template>
-              <template v-else>
-                <el-button @click="checkTableItem(scope.row,scope.$index)" size="mini" plain 
-                  :type="checkBtnStyle[scope.row.check] ? checkBtnStyle[scope.row.check] : 'default'" 
-                  :loading="scope.row.check === 2 || checkingRow.has(scope.$index)" 
-                  :icon="checkBtnIcon[scope.row.check] ? checkBtnIcon[scope.row.check] : ''" >
-                  检验
-                </el-button>
-              </template>
-            </template>
-            
-          </div>
-        </el-table-column>
-      </el-table>	
+      
     </el-form>
 
     <!-- 底部按钮 -->
@@ -118,7 +89,7 @@
         
       </div>
       <div>
-        <el-button type="primary" plain @click.native="handleCheckAll" :loading="is_checkingAll"  :disabled="!is_hasUploadExcel || is_checkingAll" icon="el-icon-reading">  检查格式</el-button>
+        <!-- <el-button type="primary" plain @click.native="handleCheckAll" :loading="is_checkingAll"  :disabled="!is_hasUploadExcel || is_checkingAll" icon="el-icon-reading">  检查格式</el-button> -->
         <el-button type="primary" @click.native="handleSaveAdd" :loading="is_submiting" :disabled="is_submiting || !is_checkAll || !is_hasUploadExcel"><i class="el-icon-check"></i> 提交</el-button>
       </div>
     </div>
@@ -132,15 +103,17 @@
 
 <script>
 const _ = require('lodash');
-import UploadExcelComponent from '@/components/UploadExcel/index.vue'
-import {changeCaseJsonKey,asyncForEach,myCache} from '@/utils/common'
-import moment from 'moment'
-import EditExcelItem from './EditExcelItem'
-import { mapGetters } from 'vuex'
+import UploadExcelComponent from '@/components/UploadExcel/index.vue';
+import ExcelShow from './ExcelShow.vue';
+import {changeCaseJsonKey,asyncForEach,myCache} from '@/utils/common';
+import moment from 'moment';
+import EditExcelItem from './EditExcelItem';
+import { mapGetters } from 'vuex';
 
-import {sppoAPI,assistAPI} from '@/api'
-import { checkColorCombo,checkCollarCuffSize } from '@/utils/validate'
+import {sppoAPI,assistAPI} from '@/api';
+import { checkColorCombo,checkCollarCuffSize } from '@/utils/validate';
 
+import parseExcel from '../mixin/parseExcel';
 
 // import {getBrandCode} from '@/api/genBrand'
 // import {getFactoryIds} from '@/api/genFactory'
@@ -150,9 +123,11 @@ import { checkColorCombo,checkCollarCuffSize } from '@/utils/validate'
 
 
 export default {
-  components: { UploadExcelComponent,EditExcelItem },
+  components: { UploadExcelComponent,EditExcelItem ,ExcelShow},
+  mixins: [parseExcel],
+
   props: {
-   
+
   },
   data() {
     return {
@@ -163,16 +138,7 @@ export default {
       is_listLoading: false,
       is_showTips: false,
       tips:'',
-      tableFields : [
-        {name:'style_no',label:'Style_No',width:120,fixed:true},
-        {name:'season',label:'Season',width:120},
-        {name:'garment_wash',label:'Garment_Wash',width:140},
-        {name:'garment_part',label:'Garment_Part',width:140},
-        {name:'color_combo',label:'Color_Combo',minWidth:150},
-        {name:'customer_fab_code',label:'Customer_Fab_Code',width:170},
-        {name:'collar_cuff_size',label:'Collar_Cuff_Size',width:140},
-        {name:'remark',label:'Remark',width:140}
-      ],
+
       uploadExcelTime : '',
       
       checkBtnStyle:['danger','default','default','success'],
@@ -185,17 +151,21 @@ export default {
         customer_code:'',
         brand:'',
         garment_fty:'',
+        brand_lable_cd:'',
+        brand_lable_desc:'',
       },
       // customer_code: [],
       selectBoxData:{
         customer_code:[],
         brand: [],
+        brand_lable_cd: [],
         garment_fty: [
           {
             value: 'TDC',
             label: 'TDC'
           }]
       },
+      brandLabelList: null,
       // tableData_o: null,
       tableData: null,
       editingRow : { },
@@ -209,6 +179,22 @@ export default {
         handler(newValue, oldValue) {
           if(oldValue !== newValue && newValue){
             this.getBrand();
+          }
+        },
+        // deep: true
+    },
+    'formData.brand': {
+        handler(newValue, oldValue) {
+          if(oldValue !== newValue && newValue){
+            this.getBrandLabel();
+          }
+        },
+        // deep: true
+    },
+    'formData.brand_lable_cd': {
+        handler(newValue, oldValue) {
+          if(oldValue !== newValue && newValue){
+            this.formData.brand_lable_desc = typeof(this.brandLabelList[newValue]) !== 'undefined' ? this.brandLabelList[newValue]['LABEL_DESC'] : '';
           }
         },
         // deep: true
@@ -230,7 +216,8 @@ export default {
   },
   computed: {
     is_checkAll(){
-      return this.errorRow.length > 0 ? false : true;
+      return true;
+      // return this.errorRow.length > 0 ? false : true;
     }
   },
 
@@ -238,12 +225,12 @@ export default {
     this.init();
   },
   beforeDestroy() {
-   
+
   },
   methods: {
     init(){
       this.getCustomerCode();
-      this.getBrand();
+      // this.getBrand();
       this.getFactory();
     },
     getTempData(key){
@@ -264,6 +251,7 @@ export default {
           value:element,label:element
         })
       });
+      console.log(customer_codes);
       if(list.length === 1){
         this.formData.customer_code = list[0].value;
       }
@@ -292,6 +280,31 @@ export default {
       })
     },
     /** 
+     * 取得客户公司选择列表
+     */
+    getBrandLabel(){
+      let customer_code = this.formData.customer_code;
+      let brand_code = this.formData.brand;
+      assistAPI.getBrandLabel({customer_code,brand_code}).then((res)=>{
+        let list = res.data.list;
+        let selector_list = [];
+        let brandLabelList = {};
+        list.forEach(item => {
+            selector_list.push({
+              label:item.LABEL_DESC + ' ( ' + item.LABEL_CD +' ) ' ,
+              value:item.LABEL_CD,
+            })
+            brandLabelList[item.LABEL_CD] = item;
+        });
+        this.brandLabelList = brandLabelList;
+        this.selectBoxData.brand_lable_cd = selector_list;
+        this.formData.brand_lable_cd = ''
+        if(selector_list.length == 1){
+          this.formData.brand_lable_cd =  selector_list[0].value
+        }
+      })
+    },
+    /** 
      * 取得分厂选择列表
      */
     getFactory(){
@@ -307,23 +320,7 @@ export default {
       }).catch((error) => {
         console.log(error)
       })
-      // let cacheList = this.$store.state.cacheData.factorys;
-      // if(cacheList && cacheList.length > 0){
-      //   this.selectBoxData.garment_fty = cacheList;
-      //   return ;
-      // }
-      // assistAPI.getFactoryIds({type:0}).then((res)=>{
-      //   let list = res.data.list;
-      //   let factory_selector_list = [];
-      //   list.forEach(item => {
-      //       factory_selector_list.push({
-      //         label:item,
-      //         value:item,
-      //       })
-      //   });
-      //   this.selectBoxData.garment_fty = factory_selector_list;
-      //   this.$store.commit('cacheData/SET_FACTORYS',factory_selector_list);
-      // })
+      
     },
     /** 
      * 上转表格
@@ -342,59 +339,6 @@ export default {
       this.is_listLoading = false;
       return false
     },
-    /**
-     * 表格载入成功后处理
-     */
-    handleSuccess({ results, header ,error }) {
-      let tableData = [];
-      let tableHeader = [];
-      if(error){
-        console.log(error.message)
-        this.$message({
-          message:'你上我传的表格似乎不太符合规范格式，请检查后重新上传',
-          type: 'warning'
-        })
-        return false;
-      }
-
-      tableData = results.map((value, index, array)=>{
-        let newItem = changeCaseJsonKey(Object.assign({},value));
-        newItem.id = index+1; 
-        newItem.idx = index; 
-        newItem.edit = false; //添加‘是否正在编辑’状态，
-        newItem.check = 1; //查询是否已验证
-        newItem.error = []; //放入检查不通过的字段名
-        newItem.uploadSuccess = 0; //用于记录是否上传成功
-        if(typeof(newItem.remark)=="undefined"){ 
-          newItem.remark = '';
-        }
-        if(typeof(newItem.collar_cuff_size)=="undefined"){ 
-          newItem.collar_cuff_size = '';
-        }
-        this.errorMsg[index] = {}; //用于检查后存放的错误信息
-        this.errorRow.push(index); //用于检查是否可按提交按钮
-        return newItem;
-      });
-      
-      for(var i=0;i<header.length;i++){
-        tableHeader.push(header[i].toLowerCase());
-      }
-      console.log(tableData);
-      if(!tableHeader.includes("season") || !tableHeader.includes('style_no') || !tableHeader.includes('garment_wash') ){
-        this.$message({
-          message: '你上我传的表格似乎不太符合规范格式，请检查后重新上传',
-          type: 'warning'
-        })
-        return false;
-      }
-      
-      // this.tableData_o = [...tableData]
-      this.tableData = tableData;
-      this.tableHeader = tableHeader
-      this.is_hasUploadExcel = true;
-      // console.log(tableData);
-      this.uploadExcelTime = moment().format('YYYY-MM-DD HH:mm:ss');
-    },
 
     /**
      * 验证单条格式是否正确
@@ -408,17 +352,17 @@ export default {
         console.log('this.checkingRow');
         console.log(this.checkingRow);
         if(!this.errorRow.includes(index)){
-         this.errorRow.push(index);
+          this.errorRow.push(index);
         }
 
         const checkEmptyField = [
-          'style_no','season','garment_wash','garment_part','color_combo','customer_fab_code'
+          'style_no','season','garment_wash','garment_part','customer_fab_code'
         ];
         let garment_wash = _.trim(row.garment_wash);
         let garment_part = _.trim(row.garment_part);
         let color_combo = _.trim(row.color_combo);
         let customer_fab_code = _.trim(row.customer_fab_code);
-        let collar_cuff_size = _.trim(row.collar_cuff_size);
+        let size = _.trim(row.size);
         
         row.check = 2; //状态进行中
         // this.$set(this.tableData,index,row);
@@ -484,16 +428,16 @@ export default {
 
         //Collar_Cuff_Size 格式必须为【数字 * 数字】,比如39.5 * 5，并且Garment_Part是O或者F的时候必须要有值.否则红色标识出来.
         if(garment_part!='' && ['F','O','f','o'].includes(garment_part)){
-          if( collar_cuff_size == ''){ //如果为空
-            row.error.push('collar_cuff_size');
-            errorMsg[index]['collar_cuff_size'] = "当Garment_Part是O或F时'collar_cuff_size'不能为空";
+          if( size == ''){ //如果为空
+            row.error.push('size');
+            errorMsg[index]['size'] = "当Garment_Part是O或F时'size'不能为空";
             hasError = true;
           }else{ 
-            if(!checkCollarCuffSize(collar_cuff_size)){
-              row.error.push('collar_cuff_size');
-              errorMsg[index]['collar_cuff_size'] = "'collar_cuff_size'格式必须为:数字*数字";
-              hasError = true;
-            }
+            // if(!checkCollarCuffSize(collar_cuff_size)){
+            //   row.error.push('size');
+            //   errorMsg[index]['size'] = "'size'格式必须为:数字*数字";
+            //   hasError = true;
+            // }
           }
         }
 
@@ -534,8 +478,7 @@ export default {
           this.checkingRow.delete(index);
           return false;
         }
-      
-        
+
         if(hasError){
           row.check = 0; //状态为不合格
         }else{ 
@@ -555,7 +498,7 @@ export default {
       
     },
 
-   
+
 
     /** 
      * 检查全部

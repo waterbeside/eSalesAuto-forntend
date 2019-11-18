@@ -6,9 +6,9 @@
         <el-form-item label="PPO_NO">
           <el-input placeholder="PPO_NO" v-model="filters.ppo_no"></el-input>
         </el-form-item>
-        <el-form-item label="Season">
+        <!-- <el-form-item label="Season">
           <el-input  placeholder="Season" v-model="filters.season"></el-input>
-        </el-form-item>
+        </el-form-item> -->
         <el-form-item label="Order Create Date">
             <el-date-picker
               v-model="filters.date_range"
@@ -32,35 +32,37 @@
 
     <!--列表-->
     <el-table highlight-current-row style="width: 100%;"
-		:data="listData" 
-    v-loading="listLoading"
-    @selection-change="handleSelectionChange"
-    v-if="!is_refresh"
-    style:="width: 100%">
-		  <el-table-column type="selection" width="50" fixed></el-table-column>
+      :data="listData" 
+      v-loading="listLoading"
+      @selection-change="handleSelectionChange"
+      v-if="!is_refresh"
+      style:="width: 100%"
+    >
+		  <!-- <el-table-column type="selection" width="50" fixed></el-table-column> -->
       <el-table-column prop="PPO_NO" label="PPO_NO" min-width="150">
-         <div slot-scope="scope"  >
-            <a :href="'http://192.168.7.211/ReportServer/Pages/ReportViewer.aspx?%2fGEK%2fSales%2fSales+F01%2fSPPOReportFile%2fSPPOReport&ppo_no='+scope.row['PPO_NO']" target="_blank">{{scope.row['PPO_NO']}}</a>
-          </div>
-        
+        <div slot-scope="scope"  >
+          <!-- <a :href="'http://192.168.7.211/ReportServer/Pages/ReportViewer.aspx?%2fGEK%2fSales%2fSales+F01%2fSPPOReportFile%2fSPPOReport&ppo_no='+scope.row['PPO_NO']" target="_blank">{{scope.row['PPO_NO']}}</a> -->
+          {{scope.row['PPO_NO']}}
+         </div>
       </el-table-column>
-      <el-table-column prop="Creater" label="Creater" width="120"></el-table-column>
-	    <el-table-column prop="Season" label="Season" width="100"></el-table-column>
-      <el-table-column prop="Style_No" label="Style_No"  width="120"></el-table-column>
-		  <el-table-column prop="Garment_Wash" label="Garment_Wash" width="160"></el-table-column>
+      <el-table-column prop="CREATE_USER_ID" label="Creater" width="120"></el-table-column>
+	    <el-table-column prop="YEAR" label="Year" width="100"></el-table-column>
+	    <el-table-column prop="CUSTOMER_SEASON" label="Season" width="100"></el-table-column>
+      <el-table-column prop="STYLE_NO" label="Style_No"  width="120"></el-table-column>
+		  <el-table-column prop="CUSTOMER_CD" label="Customer Code" width="160"></el-table-column>
 		  <el-table-column prop="Create_Time" label="创建时间" width="140"></el-table-column>
-      <el-table-column  label="操作"  width='100px' fixed="right">
+      <!-- <el-table-column  label="操作"  width='100px' fixed="right">
         <template scope="scope">
           <el-button type="primary" size="small" @click="handleEdit(scope.$index, scope.row)" icon="el-icon-edit" circle></el-button>
           <el-button type="danger" size="small" @click="handleDel(scope.$index, scope.row)" icon="el-icon-delete" circle plain></el-button>
         </template>
-      </el-table-column>
+      </el-table-column> -->
     </el-table>
 
     <!--工具条:页码-->
     <el-col :span="24" class="toolbar">
-      <el-button type="danger" size="small" @click="handleBatchDelete" :disabled="this.multipleSelection.length === 0" icon="el-icon-delete" plain>批量删除</el-button>
-      <el-button type="primary"  size="small" @click="handleBatchEdit" :disabled="this.multipleSelection.length === 0" icon="el-icon-edit" plain>批量修改</el-button>
+      <!-- <el-button type="danger" size="small" @click="handleBatchDelete" :disabled="this.multipleSelection.length === 0" icon="el-icon-delete" plain>批量删除</el-button> -->
+      <!-- <el-button type="primary"  size="small" @click="handleBatchEdit" :disabled="this.multipleSelection.length === 0" icon="el-icon-edit" plain>批量修改</el-button> -->
 
       <el-pagination
         layout="prev, pager, next"
@@ -99,12 +101,10 @@ import moment from 'moment'
 import NProgress from 'nprogress'
 import {sppoAPI} from '@/api'
 import AddView from './components/Add'
-import EditView from './components/Edit'
-import EditBatchView from './components/EditBatch'
 
 export default {
   name: 'autoSppo',
-  components: { AddView ,EditBatchView, EditView},
+  components: { AddView },
 
   data() {
     return {
@@ -115,12 +115,12 @@ export default {
       },
       pagination:{
         total:0,
-        pagesize:20,
+        pagesize:10,
       },
       page: 1,
       listLoading: false,
       multipleSelection: [], //列表选中列
-     
+
       is_addFormVisible: false, //新增界面是否显示
       is_batcheditFormVisible: false,   //批量更新界面是否显示
       is_editFormVisible: false, //编辑界面是否显示
@@ -212,6 +212,7 @@ export default {
       console.log(sppoAPI.getList);
       let param = {
         page: this.page,
+        pagesize: 10,
         ppo_no: this.filters.ppo_no,
         season: this.filters.season,
       };
@@ -228,10 +229,10 @@ export default {
       sppoAPI.getList(param).then(res=>{
         let data = res.data;
         this.listData = data.list.map((item,index)=>{
-          item.Create_Time = moment(item.Create_Time).format('YYYY-MM-DD HH:mm');
+          item.Create_Time = moment(item.CREATE_DATE).format('YYYY-MM-DD HH:mm');
           return item
         });
-        this.pagination.pagesize= data.pagination.pagesize;
+        this.pagination.pagesize= parseInt(data.pagination.pagesize);
         this.pagination.total= data.pagination.total;
         this.page= data.pagination.page;
         this.$message({
@@ -295,7 +296,7 @@ export default {
       })
 
     },
-   
+
     /***** 新增 ******/
     //显示新增界面
     handleAdd() {
@@ -330,7 +331,7 @@ export default {
           confirmButtonText: '放弃编辑',
           cancelButtonText: '再看看'
         }).then(() => {
-         this.is_editFormVisible = false;          
+          this.is_editFormVisible = false;          
         })
       }else{
         this.is_editFormVisible = false;
