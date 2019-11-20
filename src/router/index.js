@@ -72,7 +72,7 @@ export const constantRoutes = [
   {
     path: '',
     component: Layout,
-    redirect: '/development/auto_sppo_test',
+    redirect: '/development/auto_sppo',
     children: [
       {
         path: 'user_setting',
